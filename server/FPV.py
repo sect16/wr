@@ -20,7 +20,7 @@ import psutil
 import os
 import servo
 import PID
-import LED
+# import LED
 import datetime
 from rpi_ws281x import *
 import move
@@ -35,7 +35,7 @@ tor    = 17
 FindColorMode = 0
 WatchDogMode  = 0
 UltraData = 3
-LED  = LED.LED()
+# LED  = LED.LED()
 
 class FPV: 
     def __init__(self):
@@ -203,12 +203,12 @@ class FPV:
                     motionCounter += 1
                     #print(motionCounter)
                     #print(text)
-                    LED.colorWipe(Color(255,16,0))
+                    # LED.colorWipe(Color(255,16,0))
                     lastMovtionCaptured = timestamp
-
+                '''
                 if (timestamp - lastMovtionCaptured).seconds >= 0.5:
                     LED.colorWipe(Color(255,255,0))
-
+                '''
 
             encoded, buffer = cv2.imencode('.jpg', frame_image)
             jpg_as_text = base64.b64encode(buffer)

@@ -17,7 +17,7 @@ import os
 import ultra
 #import psutil
 import servo
-import LED
+# import LED
 import findline
 
 step_set = 1
@@ -216,21 +216,21 @@ def run():
             try:
                 set_R=data.split()
                 ws_R = int(set_R[1])
-                LED.colorWipe(Color(ws_R,ws_G,ws_B))
+                # LED.colorWipe(Color(ws_R,ws_G,ws_B))
             except:
                 pass
         elif 'wsG' in data:
             try:
                 set_G=data.split()
                 ws_G = int(set_G[1])
-                LED.colorWipe(Color(ws_R,ws_G,ws_B))
+                # LED.colorWipe(Color(ws_R,ws_G,ws_B))
             except:
                 pass
         elif 'wsB' in data:
             try:
                 set_B=data.split()
                 ws_B = int(set_B[1])
-                LED.colorWipe(Color(ws_R,ws_G,ws_B))
+                # LED.colorWipe(Color(ws_R,ws_G,ws_B))
             except:
                 pass
 
@@ -266,14 +266,14 @@ if __name__ == '__main__':
     PORT = 10223                              #Define port serial 
     BUFSIZ = 1024                             #Define buffer size
     ADDR = (HOST, PORT)
-
+    '''
     try:
         LED  = LED.LED()
         LED.colorWipe(Color(255,16,0))
     except:
         print('Use "sudo pip3 install rpi_ws281x" to install WS_281x package')
         pass
-
+    '''
     while  1:
         try:
             s =socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
@@ -285,7 +285,7 @@ if __name__ == '__main__':
             ap_threading=threading.Thread(target=ap_thread)   #Define a thread for data receiving
             ap_threading.setDaemon(True)                          #'True' means it is a front thread,it would close when the mainloop() closes
             ap_threading.start()                                  #Thread starts
-
+            '''
             LED.colorWipe(Color(0,16,50))
             time.sleep(1)
             LED.colorWipe(Color(0,16,100))
@@ -297,7 +297,7 @@ if __name__ == '__main__':
             LED.colorWipe(Color(0,16,255))
             time.sleep(1)
             LED.colorWipe(Color(35,255,35))
-
+            '''
         try:
             tcpSerSock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             tcpSerSock.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
@@ -307,11 +307,13 @@ if __name__ == '__main__':
             tcpCliSock, addr = tcpSerSock.accept()
             print('...connected from :', addr)
             break
+        '''
         except:
             LED.colorWipe(Color(0,0,0))
 
         try:
             LED.colorWipe(Color(0,80,255))
+        '''
         except:
             pass
 
@@ -320,4 +322,4 @@ if __name__ == '__main__':
     except:
         servo.clean_all()
         move.destroy()
-        LED.colorWipe(Color(0,0,0))
+        # LED.colorWipe(Color(0,0,0))
