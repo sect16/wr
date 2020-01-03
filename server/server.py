@@ -38,7 +38,7 @@ ultrasonicMode = 0
 FindLineMode = 0
 FindColorMode = 0
 
-SportModeOn = 0
+sport_mode_on = 0
 SpeedBase = 70
 
 
@@ -140,7 +140,7 @@ def  ap_thread():
 
 
 def run():
-    global direction_command, turn_command, pos_input, catch_input, cir_input, ultrasonicMode, FindLineMode, FindColorMode, SportModeOn
+    global direction_command, turn_command, pos_input, catch_input, cir_input, ultrasonicMode, FindLineMode, FindColorMode, sport_mode_on
     move.setup()
     findline.setup()
 
@@ -251,9 +251,9 @@ def run():
             fpv.WatchDog(1)
             tcpCliSock.send(('WatchDog').encode())
 
-        elif 'steady' in data:
+        elif 'Ultrasonic' in data:
             ultrasonicMode = 1
-            tcpCliSock.send(('steady').encode())
+            tcpCliSock.send(('Ultrasonic').encode())
 
         elif 'FindLine' in data:
             FindLineMode = 1
