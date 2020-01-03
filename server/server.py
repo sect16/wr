@@ -259,13 +259,13 @@ def run():
             FindLineMode = 1
             tcpCliSock.send(('FindLine').encode())
 
-        elif 'funEnd' in data:
+        elif 'func_end' in data:
             fpv.FindColor(0)
             fpv.WatchDog(0)
             ultrasonicMode = 0
             FindLineMode   = 0
             FindColorMode  = 0
-            tcpCliSock.send(('FunEnd').encode())
+            tcpCliSock.send(('func_end').encode())
             move.motorStop()
 
         else:
