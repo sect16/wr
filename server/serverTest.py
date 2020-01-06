@@ -36,7 +36,7 @@ ultrasonicMode = 0
 FindLineMode = 0
 FindColorMode = 0
 
-SportModeOn = 0
+sport_mode_on = 0
 SpeedBase = 70
 
 def findline_thread():       #Line tracking mode
@@ -129,7 +129,7 @@ def  ap_thread():
 
 
 def run():
-    global direction_command, turn_command, pos_input, catch_input, cir_input, ultrasonicMode, FindLineMode, FindColorMode, SportModeOn
+    global direction_command, turn_command, pos_input, catch_input, cir_input, ultrasonicMode, FindLineMode, FindColorMode, sport_mode_on
     move.setup()
     findline.setup()
 
