@@ -5,16 +5,18 @@
 # E-mail      : support@adeept.com
 # Author      : William
 # Date        : 2019/02/23
-import RPi.GPIO as GPIO
 import time
+
+import RPi.GPIO as GPIO
 
 Tr = 11
 Ec = 8
 
-def checkdist():       #Reading distance
+
+def checkdist():  # Reading distance
     GPIO.setwarnings(False)
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(Tr, GPIO.OUT,initial=GPIO.LOW)
+    GPIO.setup(Tr, GPIO.OUT, initial=GPIO.LOW)
     GPIO.setup(Ec, GPIO.IN)
     GPIO.output(Tr, GPIO.HIGH)
     time.sleep(0.000015)
@@ -25,4 +27,4 @@ def checkdist():       #Reading distance
     while GPIO.input(Ec):
         pass
     t2 = time.time()
-    return (t2-t1)*340/2
+    return (t2 - t1) * 340 / 2

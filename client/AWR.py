@@ -6,16 +6,18 @@
 # Author      : Chin Pin Hon
 # Date        : 03/01/2020
 # 
-import cv2
-import zmq
 import base64
-import numpy
-from socket import *
-import time
 import threading
+import time
 import tkinter as tk
 import traceback
-import coloredlogs, logging
+from socket import *
+
+import coloredlogs
+import cv2
+import logging
+import numpy
+import zmq
 
 # Create a logger object.
 logger = logging.getLogger(__name__)
