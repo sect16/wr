@@ -1,0 +1,22 @@
+root.bind('<KeyPress-w>', call_forward)
+root.bind('<KeyPress-s>', call_back)
+root.bind('<KeyPress-a>', call_left)
+root.bind('<KeyPress-d>', call_right)
+
+root.bind('<KeyRelease-q>', call_turn_stop)
+root.bind('<KeyRelease-e>', call_turn_stop)
+
+root.bind('<KeyRelease-w>', call_stop)
+root.bind('<KeyRelease-s>', call_stop)
+root.bind('<KeyRelease-a>', call_turn_stop)
+root.bind('<KeyRelease-d>', call_turn_stop)
+
+root.bind('<KeyPress-h>', call_head_home)
+root.bind('<KeyPress-i>', call_head_up)
+root.bind('<KeyPress-k>', call_head_down)
+root.bind('<KeyPress-x>', call_find_color)
+root.bind('<KeyPress-c>', call_watchdog)
+root.bind('<KeyPress-b>', call_stream_audio)
+root.bind('<KeyPress-v>', call_find_line)
+root.bind('<KeyPress-f>', call_sport_mode)
+root.bind('<KeyPress-z>', call_ultra)
