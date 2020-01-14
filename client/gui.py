@@ -382,11 +382,11 @@ def call_sport_mode(event):
 
 def call_ultra(event):
     global ultrasonic_mode
-    if func_mode == 0:
+    if ultrasonic_mode == 0:
         functions.send('Ultrasonic')
-        ultrasonic_mode = 1
     else:
-        functions.send('func_end')
+        functions.ultra_event.clear()
+        functions.send('Ultrasonic_end')
 
 
 def call_find_line(event):
@@ -401,10 +401,6 @@ def all_btn_red():
     btn_watchdog.config(bg=COLOR_BTN_RED, fg='#000000')
     try:
         btn_steady.config(bg=COLOR_BTN_RED, fg='#000000')
-    except NameError:
-        pass
-    try:
-        btn_ultra.config(bg=COLOR_BTN_RED, fg='#000000')
     except NameError:
         pass
 
@@ -422,10 +418,6 @@ def all_btn_normal():
         btn_steady.config(bg=COLOR_BTN, fg=COLOR_TEXT)
     except NameError:
         pass
-    try:
-        btn_ultra.config(bg=COLOR_BTN, fg=COLOR_TEXT)
-    except NameError:
-        pass
 
 
 def button_update(status_data):
@@ -434,52 +426,51 @@ def button_update(status_data):
         btn_watchdog, btn_smooth, btn_audio, btn_quit, btn_Switch_1, btn_Switch_2, btn_Switch_3, btn_FPV, \
         btn_ultra, btn_find_line, btn_sport, func_mode, switch_1, switch_2, switch_3, smooth_mode, ultrasonic_mode
     try:
-        if 'FindColor' in status_data:
+        if 'FindColor' == status_data:
             func_mode = 1
             all_btn_red()
             btn_find_color.config(bg=COLOR_BTN_ACT)
-        elif 'WatchDog' in status_data:
+        elif 'WatchDog' == status_data:
             func_mode = 1
             all_btn_red()
             btn_watchdog.config(bg=COLOR_BTN_ACT)
-        elif 'steady' in status_data:
+        elif 'steady' == status_data:
             func_mode = 1
             all_btn_red()
             btn_steady.config(bg=COLOR_BTN_ACT)
-        elif 'Ultrasonic' in status_data:
-            func_mode = 1
-            all_btn_red()
+        elif 'Ultrasonic' == status_data:
             btn_ultra.config(bg=COLOR_BTN_ACT)
             functions.start_ultra()
-        elif 'Switch_3_on' in status_data:
+            try:
+                btn_ultra.config(bg=COLOR_BTN_RED, fg='#000000')
+            except NameError:
+                pass
+        elif 'Switch_3_on' == status_data:
             btn_Switch_3.config(bg=COLOR_SWT_ACT)
             switch_3 = 1
-        elif 'Switch_2_on' in status_data:
+        elif 'Switch_2_on' == status_data:
             switch_2 = 1
             btn_Switch_2.config(bg=COLOR_SWT_ACT)
-        elif 'Switch_1_on' in status_data:
+        elif 'Switch_1_on' == status_data:
             switch_1 = 1
             btn_Switch_1.config(bg=COLOR_SWT_ACT)
-        elif 'Switch_3_off' in status_data:
+        elif 'Switch_3_off' == status_data:
             switch_3 = 0
             btn_Switch_3.config(bg=COLOR_BTN)
-        elif 'Switch_2_off' in status_data:
+        elif 'Switch_2_off' == status_data:
             switch_2 = 0
             btn_Switch_2.config(bg=COLOR_BTN)
-        elif 'Switch_1_off' in status_data:
+        elif 'Switch_1_off' == status_data:
             switch_1 = 0
             btn_Switch_1.config(bg=COLOR_BTN)
-        elif 'Smooth_on' in status_data:
+        elif 'Smooth_on' == status_data:
             smooth_mode = 1
             btn_smooth.config(bg=COLOR_SWT_ACT)
-        elif 'Smooth_off' in status_data:
+        elif 'Smooth_off' == status_data:
             smooth_mode = 0
             btn_smooth.config(bg=COLOR_BTN)
-        elif 'func_end' in status_data:
+        elif 'func_end' == status_data:
             all_btn_normal()
-            if config.ULTRA_SENSOR is not None:
-                ultrasonic_mode = 0
-                functions.ultra_event.clear()
     except:
         logger.error('Button status update exception: %s', traceback.format_exc())
 
