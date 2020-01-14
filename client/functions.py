@@ -177,7 +177,7 @@ def send(value):
 
 def start_ultra():
     global ultra_event
-    if config.ULTRA_SENSOR is not None:
+    if gui.ultrasonic_mode == 0 and not ultra_event.is_set() and config.ULTRA_SENSOR is not None:
         import ultra
         ultra_event.set()
         ultra_threading = threading.Thread(target=ultra.ultra_receive, args=([ultra_event]), daemon=True)

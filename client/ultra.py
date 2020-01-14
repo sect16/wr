@@ -4,7 +4,7 @@ import coloredlogs
 from socket import *
 import config
 import gui
-import time
+import functions
 
 # Create a logger object.
 logger = logging.getLogger(__name__)
@@ -18,8 +18,10 @@ def ultra_receive(event):
     ultra_sock = socket(AF_INET, SOCK_STREAM)
     ultra_sock.setsockopt(SOL_SOCKET, SO_REUSEADDR, 1)
     ultra_sock.bind(ultra_addr)
-    ultra_sock.listen(5)  # Start server,waiting for client
+    ultra_sock.listen(5)  # Start server, waiting for client
+    gui.ultrasonic_mode = 1
     ultra_sock, addr = ultra_sock.accept()
+    logger.info('Ultrasonic port connected')
     while event.is_set():
         try:
             config.ultra_data = str(ultra_sock.recv(config.BUFFER_SIZE).decode())
@@ -32,7 +34,9 @@ def ultra_receive(event):
                                              fill=config.COLOR_TEXT)
         except:
             logger.error('Ultrasonic exception: %s', traceback.format_exc())
+            functions.ultra_event.clear()
             pass
     gui.canvas_ultra.create_rectangle(0, 0, 352, 30, fill='#FFFFFF', width=0)
     gui.canvas_ultra.create_text((90, 11), text='Ultrasonic OFF', fill='#000000')
+    gui.ultrasonic_mode = 0
     logger.debug('Thread stopped')

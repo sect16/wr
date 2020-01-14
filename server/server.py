@@ -260,6 +260,10 @@ def run():
             ultrasonicMode = 1
             tcpCliSock.send(('Ultrasonic').encode())
 
+        elif 'Ultrasonic_end' in data:
+            ultrasonicMode = 0
+            tcpCliSock.send(('Ultrasonic_end').encode())
+
         elif 'FindLine' in data:
             FindLineMode = 1
             tcpCliSock.send(('FindLine').encode())
@@ -267,7 +271,6 @@ def run():
         elif 'func_end' in data:
             fpv.FindColor(0)
             fpv.WatchDog(0)
-            ultrasonicMode = 0
             FindLineMode = 0
             FindColorMode = 0
             tcpCliSock.send(('func_end').encode())
