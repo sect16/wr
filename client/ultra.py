@@ -1,3 +1,11 @@
+# E-mail      : sect16@gmail.com
+# Author      : Chin Pin Hon
+# Date        : 14.01.2020
+
+"""
+This function contains the ultrasonic data tcp server thread..
+"""
+
 import logging
 import traceback
 import coloredlogs
@@ -12,7 +20,11 @@ coloredlogs.install(level='DEBUG',
                     fmt='%(asctime)s.%(msecs)03d %(levelname)7s %(thread)5d --- [%(threadName)16s] %(funcName)-39s: %(message)s')
 
 
-def ultra_receive(event):
+def ultra_server_thread(event):
+    """
+    Creates a TCP server and listen on port.
+    :param event: Event flag to signal termination.
+    """
     logger.debug('Thread started')
     ultra_addr = ('', config.ULTRA_PORT)
     ultra_sock = socket(AF_INET, SOCK_STREAM)
