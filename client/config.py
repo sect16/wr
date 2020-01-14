@@ -27,7 +27,7 @@ INFO_PORT = 2256  # Define port serial
 SERVER_PORT = 10223  # Define port serial
 BUFFER_SIZE = 1024
 ULTRA_PORT = 2257  # Define port serial
-ULTRA_SENSOR = None
+ULTRA_SENSOR = 1
 VIDEO_PORT = 5555
 VIDEO_TIMEOUT = 10000
 
