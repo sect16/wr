@@ -8,19 +8,18 @@
 # Date        : 2019/02/23
 from __future__ import division
 
-import sys
 import time
 
 import Adafruit_PCA9685
-import RPi.GPIO as GPIO
+from logger import *
+
+pca = Adafruit_PCA9685.PCA9685()
+pca.set_pwm_freq(50)
 
 '''
 change this form 1 to 0 to reverse servos
 '''
 look_direction = 1
-
-pwm = Adafruit_PCA9685.PCA9685()
-pwm.set_pwm_freq(50)
 
 look_max = 500
 look_min = 100
@@ -61,11 +60,16 @@ def camera_ang(direction, ang):
         elif direction == 'home':
             org_pos = 300
 
-    pwm.set_all_pwm(0, org_pos)
+    set_pwm(0, org_pos)
 
 
 def clean_all():
-    pwm.set_all_pwm(0, 0)
+    pca.set_all_pwm(0, 0)
+
+
+def set_pwm(servo, pos):
+    logger.debug("Set PWM on servo [%s], position [%s])", servo, pos)
+    pca.set_pwm(servo, 0, pos)
 
 
 if __name__ == '__main__':
