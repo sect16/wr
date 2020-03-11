@@ -8,23 +8,24 @@
 
 import argparse
 import base64
-# import LED
 import datetime
-import os
-import threading
-import time
 from collections import deque
 
+import LED
 import PID
+import config
 import cv2
 import imutils
 import move
 import picamera
-import psutil
 import servo
+import speak as speak
+import speak_dict
 import zmq
+from logger import *
 from picamera.array import PiRGBArray
 from rpi_ws281x import *
+from speak import *
 
 pid = PID.PID()
 pid.SetKp(0.5)
@@ -35,10 +36,10 @@ X_lock = 0
 tor = 17
 FindColorMode = 0
 WatchDogMode = 0
-UltraData = 3
+UltraData = 0.45
 
+LED = LED.LED()
 
-# LED  = LED.LED()
 
 class FPV:
     def __init__(self):
@@ -52,7 +53,8 @@ class FPV:
         self.IP = invar
 
     def FindColor(self, invar):
-        global FindColorMode
+        global FindColorMode, UltraData
+        UltraData = 0.45
         FindColorMode = invar
         if not FindColorMode:
             servo.camera_ang('home', 0)
@@ -81,13 +83,13 @@ class FPV:
 
         context = zmq.Context()
         footage_socket = context.socket(zmq.PUB)
-        print(IPinver)
+        logger.debug(IPinver)
         footage_socket.connect('tcp://%s:5555' % IPinver)
 
         avg = None
         motionCounter = 0
         # time.sleep(4)
-        lastMovtionCaptured = datetime.datetime.now()
+        last_motion_captured = datetime.datetime.now()
 
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
             frame_image = frame.array
@@ -130,12 +132,12 @@ class FPV:
                         Y_lock = 1
 
                     if X < (320 - tor * 3):
-                        move.move(70, 'no', 'left', 0.6)
+                        move.move(config.SPEED_BASE, 'no', 'left', config.RADIUS)
                         # time.sleep(0.1)
                         # move.motorStop()
                         X_lock = 0
                     elif X > (330 + tor * 3):
-                        move.move(70, 'no', 'right', 0.6)
+                        move.move(config.SPEED_BASE, 'no', 'right', config.RADIUS)
                         # time.sleep(0.1)
                         # move.motorStop()
                         X_lock = 0
@@ -144,11 +146,11 @@ class FPV:
                         X_lock = 1
 
                     if X_lock == 1 and Y_lock == 1:
-                        if UltraData > 0.5:
-                            move.move(70, 'forward', 'no', 0.6)
-                        elif UltraData < 0.4:
-                            move.move(70, 'backward', 'no', 0.6)
-                            print(UltraData)
+                        if UltraData > config.MAX_TRACK_DISTANCE:
+                            move.move(config.SPEED_BASE, 'forward', 'no', config.RADIUS)
+                        elif UltraData < config.MIN_TRACK_DISTANCE:
+                            move.move(config.SPEED_BASE, 'backward', 'no', config.RADIUS)
+                            logger.debug('Ultrasonic input data: %s', UltraData)
                         else:
                             move.motorStop()
 
@@ -169,7 +171,7 @@ class FPV:
                 gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
                 if avg is None:
-                    print("[INFO] starting background model...")
+                    logger.debug("Watchdog: starting background model...")
                     avg = gray.copy().astype("float")
                     rawCapture.truncate(0)
                     continue
@@ -185,12 +187,15 @@ class FPV:
                 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                                         cv2.CHAIN_APPROX_SIMPLE)
                 cnts = imutils.grab_contours(cnts)
-                # print('x')
+                # logger.debug('x')
                 # loop over the contours
                 for c in cnts:
                     # if the contour is too small, ignore it
-                    if cv2.contourArea(c) < 5000:
+                    if cv2.contourArea(c) < config.MAX_CONTOUR_AREA:
+                        logger.debug('Contour too small (%s), ignoring...', cv2.contourArea(c))
                         continue
+                    else:
+                        speak(speak_dict.bark)
 
                     # compute the bounding box for the contour, draw it on the frame,
                     # and update the text
@@ -198,14 +203,16 @@ class FPV:
                     cv2.rectangle(frame_image, (x, y), (x + w, y + h), (128, 255, 0), 1)
                     text = "Occupied"
                     motionCounter += 1
-                    # print(motionCounter)
-                    # print(text)
-                    # LED.colorWipe(Color(255,16,0))
-                    lastMovtionCaptured = timestamp
+                    logger.info('Motion frame counter: %s', motionCounter)
+                    LED.colorWipe(Color(255, 16, 0))
+                    last_motion_captured = timestamp
                 '''
-                if (timestamp - lastMovtionCaptured).seconds >= 0.5:
+                if (timestamp - last_motion_captured).seconds >= 0.5:
                     LED.colorWipe(Color(255,255,0))
                 '''
+                if (timestamp - last_motion_captured).seconds >= 0.5:
+                    logger.debug('No motion detected.')
+                    LED.colorWipe(Color(255, 255, 0))
 
             encoded, buffer = cv2.imencode('.jpg', frame_image)
             jpg_as_text = base64.b64encode(buffer)

@@ -7,22 +7,17 @@
 GUI layout definition
 """
 
-import logging
 import time
 import tkinter as tk
 import traceback
 
-import coloredlogs
-
 import config
 import video
 from functions import send, connect, terminate, ultra_event, start_ultra, connect_event
+from logger import *
 
 root = tk.Tk()  # Define a window named root
-# Create a logger object.
-logger = logging.getLogger(__name__)
-coloredlogs.install(level='DEBUG',
-                    fmt='%(asctime)s.%(msecs)03d %(levelname)7s %(thread)5d --- [%(threadName)16s] %(funcName)-39s: %(message)s')
+
 # Flags
 move_forward_status = 0
 move_backward_status = 0
@@ -199,7 +194,7 @@ def loop():  # GUI
     btn_smooth = tk.Button(root, width=10, text='Smooth', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_smooth.bind('<ButtonPress-1>', call_smooth)
 
-    btn_sport = tk.Button(root, width=8, text='GT', bg='#F44336', fg='#FFFFFF', relief='ridge')
+    btn_sport = tk.Button(root, width=8, text='GT', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_find_line = tk.Button(root, width=10, text='FindLine', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_ultra = tk.Button(root, width=10, text='Ultrasonic', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_find_line.bind('<ButtonPress-1>', call_find_line)
@@ -389,9 +384,9 @@ def call_steady(event):
 def call_sport_mode(event):
     global sport_mode_on
     if sport_mode_on:
-        send('SportModeOff')
+        send('sport_mode_off')
     else:
-        send('SportModeOn')
+        send('sport_mode_on')
 
 
 def call_ultra(event):
@@ -445,7 +440,7 @@ def button_update(status_data):
     global root, e1, e2, label_ip_1, label_ip_2, COLOR_BTN, COLOR_TEXT, btn_connect, \
         label_cpu_temp, label_cpu_use, label_ram_use, COLOR_TEXT, var_R, var_B, var_G, btn_steady, btn_find_color, \
         btn_watchdog, btn_smooth, btn_audio, btn_quit, btn_Switch_1, btn_Switch_2, btn_Switch_3, btn_FPV, \
-        btn_ultra, btn_find_line, btn_sport, func_mode, switch_1, switch_2, switch_3, smooth_mode, ultrasonic_mode
+        btn_ultra, btn_find_line, btn_sport, func_mode, switch_1, switch_2, switch_3, smooth_mode, ultrasonic_mode, sport_mode_on
     try:
         if 'FindColor' == status_data:
             func_mode = 1
@@ -463,11 +458,28 @@ def button_update(status_data):
             btn_ultra.config(bg=COLOR_BTN_ACT)
             start_ultra()
             try:
-                btn_ultra.config(bg=COLOR_BTN_RED, fg='#000000')
+                btn_ultra.config(bg=COLOR_BTN_RED)
+            except NameError:
+                pass
+        elif 'sport_mode_on' == status_data:
+            sport_mode_on = 1
+            try:
+                btn_sport.config(bg=COLOR_BTN_RED)
+            except NameError:
+                pass
+        elif 'sport_mode_off' == status_data:
+            sport_mode_on = 0
+            try:
+                btn_sport.config(bg=COLOR_BTN)
             except NameError:
                 pass
         elif 'Ultrasonic_end' == status_data and config.ULTRA_SENSOR is not None:
-            pass
+            ultra_event.clear()
+            ultrasonic_mode = 0
+            try:
+                btn_ultra.config(bg=COLOR_BTN)
+            except NameError:
+                pass
         elif 'Switch_3_on' == status_data:
             btn_Switch_3.config(bg=COLOR_SWT_ACT)
             switch_3 = 1

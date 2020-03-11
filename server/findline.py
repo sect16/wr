@@ -9,6 +9,7 @@ import time
 
 import RPi.GPIO as GPIO
 import move
+import config
 
 '''
 status     = 1          #Motor rotation
@@ -55,13 +56,13 @@ def run():
     status_left = GPIO.input(line_pin_left)
     # print('R%d   M%d   L%d'%(status_right,status_middle,status_left))
     if status_middle == 1:
-        move.move(100, 'forward', 'no', 1)
+        move.move(config.SPEED_BASE, 'forward', 'no', 1)
     elif status_left == 1:
-        move.move(100, 'no', 'right', 1)
+        move.move(config.SPEED_BASE, 'no', 'right', 1)
     elif status_right == 1:
-        move.move(100, 'no', 'left', 1)
+        move.move(config.SPEED_BASE, 'no', 'left', 1)
     else:
-        move.move(100, 'backward', 'no', 1)
+        move.move(config.SPEED_BASE, 'backward', 'no', 1)
 
     time.sleep(0.2)
 

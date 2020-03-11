@@ -9,6 +9,7 @@
 import time
 
 import RPi.GPIO as GPIO
+import config
 
 # motor_EN_A: Pin7  |  motor_EN_B: Pin11
 # motor_A:  Pin8,Pin10    |  motor_B: Pin13,Pin12
@@ -68,12 +69,12 @@ def motor_left(status, direction, speed):  # Motor 2 positive and negative rotat
         GPIO.output(Motor_B_Pin2, GPIO.LOW)
         GPIO.output(Motor_B_EN, GPIO.LOW)
     else:
-        if direction == Dir_backward:
+        if direction == Dir_forward:
             GPIO.output(Motor_B_Pin1, GPIO.HIGH)
             GPIO.output(Motor_B_Pin2, GPIO.LOW)
             pwm_B.start(100)
             pwm_B.ChangeDutyCycle(speed)
-        elif direction == Dir_forward:
+        elif direction == Dir_backward:
             GPIO.output(Motor_B_Pin1, GPIO.LOW)
             GPIO.output(Motor_B_Pin2, GPIO.HIGH)
             pwm_B.start(0)
@@ -86,12 +87,12 @@ def motor_right(status, direction, speed):  # Motor 1 positive and negative rota
         GPIO.output(Motor_A_Pin2, GPIO.LOW)
         GPIO.output(Motor_A_EN, GPIO.LOW)
     else:
-        if direction == Dir_forward:  #
+        if direction == Dir_backward:  #
             GPIO.output(Motor_A_Pin1, GPIO.HIGH)
             GPIO.output(Motor_A_Pin2, GPIO.LOW)
             pwm_A.start(100)
             pwm_A.ChangeDutyCycle(speed)
-        elif direction == Dir_backward:
+        elif direction == Dir_forward:
             GPIO.output(Motor_A_Pin1, GPIO.LOW)
             GPIO.output(Motor_A_Pin2, GPIO.HIGH)
             pwm_A.start(0)
@@ -99,7 +100,7 @@ def motor_right(status, direction, speed):  # Motor 1 positive and negative rota
     return direction
 
 
-def move(speed, direction, turn, radius=0.6):  # 0 < radius <= 1  
+def move(speed, direction, turn, radius=config.RADIUS):  # 0 < radius <= 1
     # speed = 100
     if direction == 'forward':
         if turn == 'right':
