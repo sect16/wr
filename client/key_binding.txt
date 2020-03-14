@@ -1,0 +1,34 @@
+# E-mail      : sect16@gmail.com
+# Author      : Chin Pin Hon
+# Date        : 14.01.2020
+
+"""
+This file contains robot specific key binding config.
+
+Syntax is case sensitive.
+"""
+
+<Start key binding definition>
+<KeyPress-w>, call_forward
+<KeyPress-s>, call_back
+<KeyPress-a>, call_left
+<KeyPress-d>, call_right
+
+<KeyRelease-q>, call_turn_stop
+<KeyRelease-e>, call_turn_stop
+
+<KeyRelease-w>, call_stop
+<KeyRelease-s>, call_stop
+<KeyRelease-a>, call_turn_stop
+<KeyRelease-d>, call_turn_stop
+
+<KeyPress-h>, lambda _: send(headhome
+<KeyPress-i>, lambda _: send(headup
+<KeyPress-k>, lambda _: send(headdown
+<KeyPress-x>, call_find_color
+<KeyPress-c>, call_watchdog
+<KeyPress-b>, lambda _: send(stream_audio
+<KeyPress-v>, call_find_line
+<KeyPress-f>, call_sport_mode
+<KeyPress-z>, call_ultra
+<EOF>

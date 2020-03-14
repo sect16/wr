@@ -9,28 +9,34 @@
 import argparse
 import base64
 import datetime
+import logging
 from collections import deque
+
+import cv2
+import imutils
+import numpy
+import picamera
+import zmq
+from picamera.array import PiRGBArray
+from rpi_ws281x import *
 
 import LED
 import PID
 import config
-import cv2
-import imutils
 import move
-import picamera
 import servo
-import speak as speak
 import speak_dict
-import zmq
-from logger import *
-from picamera.array import PiRGBArray
-from rpi_ws281x import *
-from speak import *
+from speak import speak
 
+logger = logging.getLogger(__name__)
 pid = PID.PID()
 pid.SetKp(0.5)
 pid.SetKd(0)
 pid.SetKi(0)
+
+context = zmq.Context()
+footage_socket_client = None
+
 Y_lock = 0
 X_lock = 0
 tor = 17
@@ -45,7 +51,6 @@ class FPV:
     def __init__(self):
         self.frame_num = 0
         self.fps = 0
-
         self.colorUpper = (44, 255, 255)
         self.colorLower = (24, 100, 100)
 
@@ -67,24 +72,18 @@ class FPV:
         global UltraData
         UltraData = invar
 
-    def capture_thread(self, IPinver):
+    def fpv_capture_thread(self, client_ip_address, event):
+        global PORT, footage_socket_client
         ap = argparse.ArgumentParser()  # OpenCV initialization
         ap.add_argument("-b", "--buffer", type=int, default=64,
                         help="max buffer size")
         args = vars(ap.parse_args())
         pts = deque(maxlen=args["buffer"])
 
-        font = cv2.FONT_HERSHEY_SIMPLEX
-
         camera = picamera.PiCamera()
-        camera.resolution = (640, 480)
+        camera.resolution = config.RESOLUTION
         camera.framerate = 20
-        rawCapture = PiRGBArray(camera, size=(640, 480))
-
-        context = zmq.Context()
-        footage_socket = context.socket(zmq.PUB)
-        logger.debug(IPinver)
-        footage_socket.connect('tcp://%s:5555' % IPinver)
+        rawCapture = PiRGBArray(camera, size=config.RESOLUTION)
 
         avg = None
         motionCounter = 0
@@ -92,6 +91,9 @@ class FPV:
         last_motion_captured = datetime.datetime.now()
 
         for frame in camera.capture_continuous(rawCapture, format="bgr", use_video_port=True):
+            if event.is_set():
+                logger.info('Kill event received, terminating FPV thread.')
+                break
             frame_image = frame.array
             cv2.line(frame_image, (300, 240), (340, 240), (128, 255, 128), 1)
             cv2.line(frame_image, (320, 220), (320, 260), (128, 255, 128), 1)
@@ -107,7 +109,8 @@ class FPV:
                                         cv2.CHAIN_APPROX_SIMPLE)[-2]
                 center = None
                 if len(cnts) > 0:
-                    cv2.putText(frame_image, 'Target Detected', (40, 60), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                    cv2.putText(frame_image, 'Target Detected', (40, 60), config.FONT, 0.5, (255, 255, 255), 1,
+                                cv2.LINE_AA)
                     c = max(cnts, key=cv2.contourArea)
                     ((x, y), radius) = cv2.minEnclosingCircle(c)
                     M = cv2.moments(c)
@@ -117,7 +120,7 @@ class FPV:
                     if radius > 10:
                         cv2.rectangle(frame_image, (int(x - radius), int(y + radius)),
                                       (int(x + radius), int(y - radius)), (255, 255, 255), 1)
-
+                    logger.debug('Target input frame position X: %d Y: %d', X, Y)
                     if Y < (240 - tor):
                         error = (240 - Y) / 5
                         outv = int(round((pid.GenOut(error)), 0))
@@ -156,13 +159,13 @@ class FPV:
 
 
                 else:
-                    cv2.putText(frame_image, 'Target Detecting', (40, 60), font, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
+                    cv2.putText(frame_image, 'Target Detecting', (40, 60), config.FONT, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
                     move.motorStop()
 
                 for i in range(1, len(pts)):
                     if pts[i - 1] is None or pts[i] is None:
                         continue
-                    thickness = int(np.sqrt(args["buffer"] / float(i + 1)) * 2.5)
+                    thickness = int(numpy.sqrt(args["buffer"] / float(i + 1)) * 2.5)
                     cv2.line(frame_image, pts[i - 1], pts[i], (0, 0, 255), thickness)
                 ####>>>OpenCV Ends<<<####
 
@@ -171,7 +174,7 @@ class FPV:
                 gray = cv2.GaussianBlur(gray, (21, 21), 0)
 
                 if avg is None:
-                    logger.debug("Watchdog: starting background model...")
+                    logger.info("Starting background model for watchdog...")
                     avg = gray.copy().astype("float")
                     rawCapture.truncate(0)
                     continue
@@ -187,7 +190,6 @@ class FPV:
                 cnts = cv2.findContours(thresh.copy(), cv2.RETR_EXTERNAL,
                                         cv2.CHAIN_APPROX_SIMPLE)
                 cnts = imutils.grab_contours(cnts)
-                # logger.debug('x')
                 # loop over the contours
                 for c in cnts:
                     # if the contour is too small, ignore it
@@ -214,15 +216,34 @@ class FPV:
                     logger.debug('No motion detected.')
                     LED.colorWipe(Color(255, 255, 0))
 
-            encoded, buffer = cv2.imencode('.jpg', frame_image)
-            jpg_as_text = base64.b64encode(buffer)
-            footage_socket.send(jpg_as_text)
-
+            if config.VIDEO_OUT == 1:
+                if footage_socket_client is None:
+                    logger.info('Initializing ZMQ client...')
+                    init_client(client_ip_address)
+                encoded, buffer = cv2.imencode('.jpg', frame_image)
+                jpg_as_text = base64.b64encode(buffer)
+                # logger.debug('Sending footage using ZMQ')
+                footage_socket_client.send(jpg_as_text)
+            elif config.VIDEO_OUT == 0 and footage_socket_client is not None:
+                logger.info('Terminating ZMQ client.')
+                footage_socket_client.close()
+                footage_socket_client = None
             rawCapture.truncate(0)
+        logger.debug('Stopping thread')
+        camera.close()
+
+
+def init_client(client_ip_address):
+    global footage_socket_client
+    logger.debug('Capture connection (%s:%s)', client_ip_address, config.FPV_PORT)
+    footage_socket_client = context.socket(zmq.PUB)
+    footage_socket_client.setsockopt(zmq.LINGER, 0)
+    footage_socket_client.setsockopt(zmq.BACKLOG, 0)
+    footage_socket_client.connect('tcp://%s:%d' % (client_ip_address, config.FPV_PORT))
 
 
 if __name__ == '__main__':
     fpv = FPV()
     while 1:
-        fpv.capture_thread('192.168.0.110')
+        fpv.fpv_capture_thread('127.0.0.1')
         pass

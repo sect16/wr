@@ -5,28 +5,28 @@
 # E-mail      : support@adeept.com
 # Author      : William
 # Date        : 2019/02/23
-
 import os
 import socket
 import subprocess
 import threading
 import time
 import traceback
+import logging
+
+import psutil
+from rpi_ws281x import *
 
 import FPV
 import LED
 import config
 import findline
 import move
-import psutil
 import servo
 import speak_dict
 import ultra
-from logger import *
-from rpi_ws281x import *
-from speak import *
+from speak import speak
 
-logger.debug('Starting python...')
+logger = logging.getLogger(__name__)
 
 new_frame = 0
 direction_command = 'no'
@@ -45,7 +45,7 @@ addr = None
 tcp_server_socket = None
 tcp_server = None
 HOST = ''
-ADDR = (HOST, config.PORT)
+ADDR = (HOST, config.SERVER_PORT)
 kill_event = threading.Event()
 ultra_event = threading.Event()
 
@@ -112,7 +112,7 @@ def info_get():
 def info_send_client():
     logger.info('Starting info thread.')
     SERVER_IP = addr[0]
-    SERVER_ADDR = (SERVER_IP, config.SERVER_PORT)
+    SERVER_ADDR = (SERVER_IP, config.INFO_PORT)
     Info_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Set connection value for socket
     Info_Socket.connect(SERVER_ADDR)
     logger.debug(SERVER_ADDR)
@@ -149,7 +149,7 @@ def ultra_send_client(event):
 
 def FPV_thread():
     fpv = FPV.FPV()
-    fpv.capture_thread(addr[0])
+    fpv.fpv_capture_thread(addr[0])
 
 
 def ap_thread():
@@ -302,6 +302,15 @@ def run():
             else:
                 logger.info('Audio streaming server already started.')
             tcp_server_socket.send('stream_audio'.encode())
+        elif 'start_video' == data:
+            config.VIDEO_OUT = 1
+            tcp_server_socket.send('start_video'.encode())
+        elif 'stop_video' == data:
+            config.VIDEO_OUT = 0
+            tcp_server_socket.send('stop_video'.encode())
+        elif 'disconnect' == data:
+            tcp_server_socket.send('disconnect'.encode())
+            disconnect()
         else:
             logger.info('Speaking command received')
             speak(data)
@@ -314,15 +323,16 @@ def main():
     try:
         LED.colorWipe(Color(255, 16, 0))
     except:
-        logger.debug('Use "sudo pip3 install rpi_ws281x" to install WS_281x package')
+        logger.warning('Use "sudo pip3 install rpi_ws281x" to install WS_281x package')
         pass
     while 1:
         try:
             s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
             s.connect(("1.1.1.1", 80))
-            server_addr = s.getsockname()[0]
+            global server_address
+            server_address = s.getsockname()[0]
             s.close()
-            logger.debug('Server listening on: %s:%s', server_address, config.SERVER_PORT)
+            logger.info('Server listening on: %s:%s', server_address, config.SERVER_PORT)
         except:
             ap_threading = threading.Thread(target=ap_thread)  # Define a thread for data receiving
             ap_threading.setDaemon(True)  # 'True' means it is a front thread,it would close when the mainloop() closes
@@ -345,15 +355,14 @@ def main():
             tcp_server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
             tcp_server.bind(ADDR)
             tcp_server.listen(5)  # Start server,waiting for client
-            logger.debug('Waiting for connection...')
+            logger.info('Waiting for connection...')
             speak(speak_dict.hello)
             tcp_server_socket, addr = tcp_server.accept()
-            logger.debug('Connected from %s', addr)
+            logger.info('Connected from %s', addr)
             speak(speak_dict.connect)
-
-            fpv = FPV.FPV()
-            fps_threading = threading.Thread(target=FPV_thread)  # Define a thread for FPV and OpenCV
-            fps_threading.setDaemon(True)  # 'True' means it is a front thread,it would close when the mainloop() closes
+            global fpv
+            fps_threading = threading.Thread(target=fpv.fpv_capture_thread, args=(addr[0], kill_event),
+                                             daemon=True)  # Define a thread for FPV and OpenCV
             fps_threading.start()  # Thread starts
             break
         except:
@@ -376,7 +385,7 @@ def main():
 
 
 def disconnect():
-    logger.debug('Disconnecting and termination threads.')
+    logger.info('Disconnecting and termination threads.')
     speak(speak_dict.disconnect)
     global tcp_server_socket, tcp_server, kill_event
     kill_event.set()
@@ -387,6 +396,3 @@ def disconnect():
     tcp_server.close()
     tcp_server_socket.close()
     main()
-
-
-main()
