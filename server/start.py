@@ -1,12 +1,11 @@
 #!/usr/bin/python
-# Description : AWR client
+# Description : DarkPaw client
 # E-mail      : sect16@gmail.com
 # Author      : Chin Pin Hon
 # Date        : 14.01.2020
-#
+# 
 
-import gui
-import coloredlogs
+import server
 import yaml
 import os
 import logging.config
@@ -21,4 +20,4 @@ if __name__ == '__main__':
     logConfig = yaml.safe_load(f.read())
     f.close()
     logging.config.dictConfig(logConfig)
-    gui.loop()
+    server.main()

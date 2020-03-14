@@ -9,10 +9,11 @@
 from __future__ import division
 
 import time
+import logging
 
 import Adafruit_PCA9685
-from logger import *
 
+logger = logging.getLogger(__name__)
 pca = Adafruit_PCA9685.PCA9685()
 pca.set_pwm_freq(50)
 

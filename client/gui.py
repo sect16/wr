@@ -10,14 +10,15 @@ GUI layout definition
 import time
 import tkinter as tk
 import traceback
+import logging
 
 import config
 import video
 from functions import send, connect, terminate, ultra_event, start_ultra, connect_event
-from logger import *
 
+logger = logging.getLogger(__name__)
 root = tk.Tk()  # Define a window named root
-
+keyDict = dict()
 # Flags
 move_forward_status = 0
 move_backward_status = 0
@@ -192,8 +193,6 @@ def loop():  # GUI
     btn_steady = tk.Button(root, width=10, text='Steady', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_steady.bind('<ButtonPress-1>', call_steady)
     btn_smooth = tk.Button(root, width=10, text='Smooth', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
-    btn_smooth.bind('<ButtonPress-1>', call_smooth)
-
     btn_sport = tk.Button(root, width=8, text='GT', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_find_line = tk.Button(root, width=10, text='FindLine', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_ultra = tk.Button(root, width=10, text='Ultrasonic', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
@@ -203,7 +202,25 @@ def loop():  # GUI
 
     exec(open("custom.py").read())
 
+    # Read key binding configuration file
+    global keyDict
+    initial = 0
+    ptr = 1
+    f = open("key_binding.txt", "r")
+    for line in f:
+        if line.find('<Start key binding definition>') == 0:
+            initial = ptr
+        elif line.find('<EOF>') == 0:
+            break
+        if initial > 0 & line.find('<KeyPress-') == 0:
+            thisList = line.replace(" ", "").replace("\n", "").split(',', 2)
+            if len(thisList) == 2:
+                keyDict[thisList[0]] = thisList[1]
+        ptr += 1
+    f.close()
+    # Initialize key binding
     bind_keys()
+
     root.protocol("WM_DELETE_WINDOW", lambda: terminate(0))
     root.mainloop()  # Run the mainloop()
 
@@ -212,8 +229,13 @@ def bind_keys():
     """
     Function to assign keyboard key bindings
     """
-    global root
-    exec(open("key_bind.py").read())
+    global root, keyDict
+    for x, y in keyDict.items():
+        logger.debug('Got record: ' + x + ',' + y)
+        if y.find('call') == -1:
+            eval('root.bind(\'' + x + '\', lambda _: send(\'' + y + '\'))')
+        else:
+            eval('root.bind(\'' + x + '\', ' + y + ')')
     logger.debug('Bind KeyPress')
 
 

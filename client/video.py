@@ -10,6 +10,7 @@ import base64
 import threading
 import time
 import traceback
+import logging
 
 import config
 import cv2
@@ -17,7 +18,8 @@ import functions
 import gui
 import numpy
 import zmq
-from logger import *
+
+logger = logging.getLogger(__name__)
 
 # Variables
 connect_event = functions.connect_event

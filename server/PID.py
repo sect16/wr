@@ -1,18 +1,14 @@
 #! /usr/bin/python
 # File name   : PID.py
-# Description : PID
-# Website     : www.adeept.com
-# E-mail      : support@adeept.com
-# Author      : William
-# Date        : 2019/02/23
+
 import time
 
 
 class PID:
     def __init__(self):
         self.Kp = 0
-        self.Kd = 0
         self.Ki = 0
+        self.Kd = 0
         self.Initialize()
 
     def SetKp(self, invar):
@@ -58,9 +54,8 @@ class PID:
 '''
 pid = PID()
 pid.SetKp(Kp)
-pid.SetKd(Kd)
 pid.SetKi(Ki)
-
+pid.SetKd(Kd)
 fb = 0
 outv = 0
 

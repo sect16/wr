@@ -21,6 +21,7 @@ LABEL_BG = '#F44336'
 # color_oval = '#2196F3'  # Set oval color
 COLOR_BTN_RED = '#FF6D00'
 FONT = cv2.FONT_HERSHEY_SIMPLEX
+MAX_CONTOUR_AREA = 5000
 
 # Configuration
 INFO_PORT = 2256  # Define port serial
@@ -32,3 +33,7 @@ VIDEO_PORT = 5555
 VIDEO_TIMEOUT = 10000
 
 ultra_data = 0
+
+SPEED_BASE = 70
+SPEED_FAST = 100
+RADIUS = 0.6

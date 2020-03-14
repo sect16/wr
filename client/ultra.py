@@ -7,12 +7,14 @@ This function contains the ultrasonic data tcp server thread..
 """
 
 import traceback
+import logging
 from socket import *
 
 import config
 import functions
 import gui
-from logger import *
+
+logger = logging.getLogger(__name__)
 
 
 def ultra_server_thread(event):
