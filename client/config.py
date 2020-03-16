@@ -9,6 +9,7 @@ This file contains constants and global variables.
 
 import cv2
 
+TITLE = 'Mini Robot'
 COLOR_SWT_ACT = '#4CAF50'
 COLOR_BTN_ACT = '#00E676'
 COLOR_BG = '#000000'  # Set background color
@@ -37,3 +38,12 @@ ultra_data = 0
 SPEED_BASE = 70
 SPEED_FAST = 100
 RADIUS = 0.6
+
+guiTuple = (
+    "btn_down.place(x=400, y=230)",
+    "btn_home.place(x=250, y=230)",
+    "btn_sport.place(x=250, y=195)",
+    "canvas_ultra.place(x=30, y=145)",
+    "btn_find_line.place(x=285, y=465)",
+    "btn_ultra.place(x=30, y=465)",
+    "canvas_ultra.place(x=30, y=145)")
