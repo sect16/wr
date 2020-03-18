@@ -22,12 +22,12 @@ KeyRelease-s, call_stop
 KeyRelease-a, call_turn_stop
 KeyRelease-d, call_turn_stop
 
-KeyPress-h, lambda _: send(headhome
-KeyPress-i, lambda _: send(headup
-KeyPress-k, lambda _: send(headdown
+KeyPress-h, headhome
+KeyPress-i, headup
+KeyPress-k, headdown
 KeyPress-x, call_find_color
 KeyPress-c, call_watchdog
-KeyPress-b, lambda _: send(stream_audio
+KeyPress-b, stream_audio
 KeyPress-v, call_find_line
 KeyPress-f, call_sport_mode
 KeyPress-z, call_ultra
