@@ -390,3 +390,7 @@ def disconnect():
     tcp_server.close()
     tcp_server_socket.close()
     main()
+
+
+if __name__ == "__main__":
+    main()
