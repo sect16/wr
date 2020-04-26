@@ -146,11 +146,6 @@ def ultra_send_client(event):
     ultra_event.clear()
 
 
-def FPV_thread():
-    fpv = fpv.fpv()
-    fpv.fpv_capture_thread(addr[0])
-
-
 def ap_thread():
     logger.info('Starting AP thread.')
     os.system("sudo create_ap wlan0 eth0 AdeeptCar 12345678")
