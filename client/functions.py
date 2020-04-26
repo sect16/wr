@@ -54,7 +54,7 @@ def config_import(initial):
     """
     This function imports IP address data from 'config.txt' file
     :param initial: Initial IP value.
-    :return: IP value in IP.txt file.
+    :return: IP value in config.txt file.
     """
     f = open("config.txt", "r")
     for line in f:
