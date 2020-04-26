@@ -4,7 +4,7 @@
 import time
 
 
-class pid:
+class Pid:
     def __init__(self):
         self.Kp = 0
         self.Ki = 0

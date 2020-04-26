@@ -28,7 +28,7 @@ import speak_dict
 from speak import speak
 
 logger = logging.getLogger(__name__)
-pid = pid.pid()
+pid = pid.Pid()
 pid.SetKp(0.5)
 pid.SetKd(0)
 pid.SetKi(0)
@@ -43,10 +43,10 @@ FindColorMode = 0
 WatchDogMode = 0
 UltraData = 0.45
 
-led = led.led()
+led = led.Led()
 
 
-class fpv:
+class Fpv:
     def __init__(self):
         self.frame_num = 0
         self.fps = 0
@@ -242,7 +242,7 @@ def init_client(client_ip_address):
 
 
 if __name__ == '__main__':
-    fpv = fpv()
+    fpv = Fpv()
     while 1:
         fpv.fpv_capture_thread('127.0.0.1')
         pass
