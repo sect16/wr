@@ -5,21 +5,20 @@
 # E-mail      : support@adeept.com
 # Author      : William
 # Date        : 2019/02/23
+import logging
 import os
 import socket
 import subprocess
 import threading
 import time
 import traceback
-import logging
 
 import psutil
-from rpi_ws281x import *
 
-import FPV
-import LED
 import config
 import findline
+import fpv
+import led
 import move
 import servo
 import speak_dict
@@ -52,8 +51,8 @@ ultra_event = threading.Event()
 server_address = ''
 stream_audio_started = 0
 
-LED = LED.LED()
-fpv = FPV.FPV()
+led = led.Led()
+fpv = fpv.Fpv()
 
 
 def findline_thread():  # Line tracking mode
@@ -148,7 +147,7 @@ def ultra_send_client(event):
 
 
 def FPV_thread():
-    fpv = FPV.FPV()
+    fpv = fpv.fpv()
     fpv.fpv_capture_thread(addr[0])
 
 
@@ -239,21 +238,21 @@ def run():
             try:
                 set_R = data.split()
                 ws_R = int(set_R[1])
-                LED.colorWipe(Color(ws_R, ws_G, ws_B))
+                led.colorWipe([ws_G, ws_R, ws_B])
             except:
                 pass
         elif 'wsG' in data:
             try:
                 set_G = data.split()
                 ws_G = int(set_G[1])
-                LED.colorWipe(Color(ws_R, ws_G, ws_B))
+                led.colorWipe([ws_G, ws_R, ws_B])
             except:
                 pass
         elif 'wsB' in data:
             try:
                 set_B = data.split()
                 ws_B = int(set_B[1])
-                LED.colorWipe(Color(ws_R, ws_G, ws_B))
+                led.colorWipe([ws_G, ws_R, ws_B])
             except:
                 pass
 
@@ -321,7 +320,7 @@ def main():
     global kill_event, ADDR
     kill_event.clear()
     try:
-        LED.colorWipe(Color(255, 16, 0))
+        led.colorWipe([255, 16, 0])
     except:
         logger.warning('Use "sudo pip3 install rpi_ws281x" to install WS_281x package')
         pass
@@ -337,17 +336,17 @@ def main():
             ap_threading = threading.Thread(target=ap_thread)  # Define a thread for data receiving
             ap_threading.setDaemon(True)  # 'True' means it is a front thread,it would close when the mainloop() closes
             ap_threading.start()  # Thread starts
-            LED.colorWipe(Color(0, 16, 50))
+            led.colorWipe([0, 16, 50])
             time.sleep(1)
-            LED.colorWipe(Color(0, 16, 100))
+            led.colorWipe([0, 16, 100])
             time.sleep(1)
-            LED.colorWipe(Color(0, 16, 150))
+            led.colorWipe([0, 16, 150])
             time.sleep(1)
-            LED.colorWipe(Color(0, 16, 200))
+            led.colorWipe([0, 16, 200])
             time.sleep(1)
-            LED.colorWipe(Color(0, 16, 255))
+            led.colorWipe([0, 16, 255])
             time.sleep(1)
-            LED.colorWipe(Color(35, 255, 35))
+            led.colorWipe([35, 255, 35])
         try:
             global tcp_server_socket, tcp_server
             global addr
@@ -366,14 +365,14 @@ def main():
             fps_threading.start()  # Thread starts
             break
         except:
-            LED.colorWipe(Color(0, 0, 0))
+            led.colorWipe([0, 0, 0])
 
         try:
-            LED.colorWipe(Color(0, 80, 255))
+            led.colorWipe([0, 80, 255])
         except:
             logger.error('Exception while waiting for connection: %s', traceback.format_exc())
             kill_event.set()
-            LED.colorWipe(Color(0, 0, 0))
+            led.colorWipe([0, 0, 0])
             pass
 
     try:
@@ -389,7 +388,7 @@ def disconnect():
     speak(speak_dict.disconnect)
     global tcp_server_socket, tcp_server, kill_event
     kill_event.set()
-    LED.colorWipe(Color(0, 0, 0))
+    led.colorWipe([0, 0, 0])
     servo.clean_all()
     move.destroy()
     time.sleep(2)

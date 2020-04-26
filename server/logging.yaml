@@ -35,7 +35,7 @@ loggers:
     handlers: [console]
     propogate: no
 
-  FPV:
+  fpv:
     level: INFO
     handlers: [console]
     propogate: no

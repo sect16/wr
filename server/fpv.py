@@ -18,18 +18,17 @@ import numpy
 import picamera
 import zmq
 from picamera.array import PiRGBArray
-from rpi_ws281x import *
 
-import LED
-import PID
 import config
+import led
 import move
+import pid
 import servo
 import speak_dict
 from speak import speak
 
 logger = logging.getLogger(__name__)
-pid = PID.PID()
+pid = pid.pid()
 pid.SetKp(0.5)
 pid.SetKd(0)
 pid.SetKi(0)
@@ -44,10 +43,10 @@ FindColorMode = 0
 WatchDogMode = 0
 UltraData = 0.45
 
-LED = LED.LED()
+led = led.led()
 
 
-class FPV:
+class fpv:
     def __init__(self):
         self.frame_num = 0
         self.fps = 0
@@ -206,15 +205,15 @@ class FPV:
                     text = "Occupied"
                     motionCounter += 1
                     logger.info('Motion frame counter: %s', motionCounter)
-                    LED.colorWipe(Color(255, 16, 0))
+                    led.colorWipe([255, 16, 0])
                     last_motion_captured = timestamp
                 '''
                 if (timestamp - last_motion_captured).seconds >= 0.5:
-                    LED.colorWipe(Color(255,255,0))
+                    led.colorWipe(Color(255,255,0))
                 '''
                 if (timestamp - last_motion_captured).seconds >= 0.5:
                     logger.debug('No motion detected.')
-                    LED.colorWipe(Color(255, 255, 0))
+                    led.colorWipe([255, 255, 0])
 
             if config.VIDEO_OUT == 1:
                 if footage_socket_client is None:
@@ -243,7 +242,7 @@ def init_client(client_ip_address):
 
 
 if __name__ == '__main__':
-    fpv = FPV()
+    fpv = fpv()
     while 1:
         fpv.fpv_capture_thread('127.0.0.1')
         pass
