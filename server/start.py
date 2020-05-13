@@ -5,10 +5,12 @@
 # Date        : 14.01.2020
 # 
 
-import server
-import yaml
-import os
 import logging.config
+import os
+
+import yaml
+
+import server
 
 if __name__ == '__main__':
     logging.addLevelName(logging.DEBUG, "\033[0;32m%8s\033[1;0m" % logging.getLevelName(logging.DEBUG))
@@ -16,8 +18,7 @@ if __name__ == '__main__':
     logging.addLevelName(logging.WARNING, "\033[0;33m%8s\033[1;0m" % logging.getLevelName(logging.WARNING))
     logging.addLevelName(logging.ERROR, "\033[0;31m%8s\033[1;0m" % logging.getLevelName(logging.ERROR))
     logging.addLevelName(logging.CRITICAL, "\033[0;31m%8s\033[1;0m" % logging.getLevelName(logging.CRITICAL))
-    f = open(str(os.getcwd()) + "/logging.yaml", "r")
-    logConfig = yaml.safe_load(f.read())
-    f.close()
+    with open(str(os.getcwd()) + "/logging.yaml", "r") as f:
+        logConfig = yaml.safe_load(f.read())
     logging.config.dictConfig(logConfig)
     server.main()

@@ -7,6 +7,7 @@
 # Date        : 2019/02/23
 import logging
 import os
+import signal
 import socket
 import subprocess
 import threading
@@ -168,12 +169,7 @@ def run():
     ws_G = 0
     ws_B = 0
 
-    Y_pitch = 0
-    Y_pitch_MAX = 200
-    Y_pitch_MIN = -200
-
     while not kill_event.is_set():
-        data = ''
         data = str(tcp_server_socket.recv(config.BUFFER_SIZE).decode())
         if not data:
             continue
@@ -286,16 +282,24 @@ def run():
             move.motorStop()
 
         elif 'stream_audio' == data:
-            global server_address, stream_audio_started
+            global server_address, stream_audio_started, p
             if stream_audio_started == 0:
                 logger.info('Audio streaming server starting...')
-                subprocess.Popen([str(
-                    'cvlc -vvv alsa://hw:1,0 :live-caching=50 --sout "#standard{access=http,mux=ogg,dst=' + server_address + ':3030}"')],
-                    shell=True)
+                p = subprocess.Popen([str(
+                    'cvlc alsa://hw:1,0 :live-caching=50 --sout "#standard{access=http,mux=ogg,dst=' + server_address + ':' + str(
+                        config.AUDIO_PORT) + '}"')],
+                    shell=True, preexec_fn=os.setsid)
+                # p = subprocess.Popen(['/usr/bin/cvlc','-vvv', 'alsa://hw:1,0', ':live-caching=50', '--sout', '\"#standard{access=http,mux=ogg,dst=\'', server_address, '\':3030}\"'], shell=False)
                 stream_audio_started = 1
             else:
                 logger.info('Audio streaming server already started.')
             tcp_server_socket.send('stream_audio'.encode())
+        elif 'stream_audio_end' == data:
+            if p is not None:
+                os.killpg(os.getpgid(p.pid), signal.SIGTERM)  # Send the signal to all the process groups
+            stream_audio_started = 0
+            tcp_server_socket.send('stream_audio_end'.encode())
+
         elif 'start_video' == data:
             config.VIDEO_OUT = 1
             tcp_server_socket.send('start_video'.encode())
@@ -375,7 +379,6 @@ def main():
     except:
         logger.error('Run exception, terminate and restart main(). %s', traceback.format_exc())
         disconnect()
-        main()
 
 
 def disconnect():
@@ -389,7 +392,6 @@ def disconnect():
     time.sleep(2)
     tcp_server.close()
     tcp_server_socket.close()
-    main()
 
 
 if __name__ == "__main__":
