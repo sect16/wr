@@ -40,6 +40,7 @@ ultra_data = 0
 SPEED_BASE = 70
 SPEED_FAST = 100
 RADIUS = 0.6
+CAM_ANGLE = 25
 
 guiTuple = (
     "btn_down.place(x=400, y=230)",

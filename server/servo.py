@@ -8,10 +8,12 @@
 # Date        : 2019/02/23
 from __future__ import division
 
-import time
 import logging
+import time
 
 import Adafruit_PCA9685
+
+import config
 
 logger = logging.getLogger(__name__)
 pca = Adafruit_PCA9685.PCA9685()
@@ -41,7 +43,7 @@ def ctrl_range(raw, max_genout, min_genout):
 def camera_ang(direction, ang):
     global org_pos
     if ang == 'no':
-        ang = 50
+        ang = config.CAM_ANGLE
     if look_direction:
         if direction == 'lookdown':
             org_pos += ang

@@ -253,6 +253,8 @@ def loop():  # GUI
     btn_balance_back_left.bind('<ButtonPress-1>', lambda _: send('btn_balance_back_left'))
     btn_balance_back_right.bind('<ButtonPress-1>', lambda _: send('btn_balance_back_right'))
 
+    # TO-DO add camera head angle slider bar
+
     # Read custom gui from config
     for x in config.guiTuple:
         eval(x)
