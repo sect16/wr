@@ -21,4 +21,5 @@ if __name__ == '__main__':
     with open(str(os.getcwd()) + "/logging.yaml", "r") as f:
         logConfig = yaml.safe_load(f.read())
     logging.config.dictConfig(logConfig)
-    server.main()
+    while True:
+        server.main()
