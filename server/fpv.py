@@ -9,18 +9,19 @@ import argparse
 import base64
 import datetime
 import logging
+import time
 from collections import deque
 
 import cv2
 import imutils
 import numpy
 import zmq
-from imutils.video.pivideostream import PiVideoStream
 
 import config
 import led
 import move
 import pid
+import pivideostream
 import speak_dict
 from speak import speak
 
@@ -28,6 +29,7 @@ logger = logging.getLogger(__name__)
 
 led = led.Led()
 pid = pid.Pid()
+pvs = pivideostream.PiVideoStream()
 pid.SetKp(0.5)
 pid.SetKd(0)
 pid.SetKi(0)
@@ -83,10 +85,10 @@ class Fpv:
                         help="max buffer size")
         args = vars(ap.parse_args())
         pts = deque(maxlen=args["buffer"])
-        vs = PiVideoStream(resolution=config.RESOLUTION, framerate=config.FRAME_RATE).start()
-        # time.sleep(2.0)
+        frame_rate_mili = int(1000000 / config.FRAME_RATE)
+        vs = pvs.start()
+        frame_image = vs.read()
         while not event.is_set():
-            frame_image = vs.read()
             # Draw crosshair lines
             cv2.line(frame_image, (int(config.RESOLUTION[0] / 2) - 20, int(config.RESOLUTION[1] / 2)),
                      (int(config.RESOLUTION[0] / 2) + 20, int(config.RESOLUTION[1] / 2)), (128, 255, 128), 1)
@@ -112,11 +114,26 @@ class Fpv:
                 logger.info('Terminating ZMQ client.')
                 footage_socket_client.close()
                 footage_socket_client = None
-            if event.is_set():
-                logger.info('Kill event received, terminating FPV thread.')
-                break
-        logger.info('Stopping VIDEO thread')
+            limit_framerate(frame_rate_mili)
+            frame_image = vs.read()
+        logger.info('Kill event received, terminating FPV thread.')
         vs.stop()
+
+
+def limit_framerate(frame_rate):
+    global image_loop_start
+    """
+    This function does not do anything if framerate is below preset value.
+    If framerate is above preset value, the function sleeps for the remaining amount of time derived from datetime input param. 
+    
+    :param frame_rate: Frame rate in milliseconds.
+    :param image_loop_start: Last run time.
+    :return: void
+    """
+    timelapse = datetime.datetime.now() - image_loop_start
+    if timelapse < datetime.timedelta(microseconds=frame_rate):
+        time.sleep((frame_rate - timelapse.microseconds) / 1000000)
+    image_loop_start = datetime.datetime.now()
 
 
 def init_client(client_ip_address):
