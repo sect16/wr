@@ -91,13 +91,30 @@ def open_cv_thread(event):
             img = base64.b64decode(frame)
             numpy_image = numpy.frombuffer(img, dtype=numpy.uint8)
             source = cv2.imdecode(numpy_image, 1)
-            cv2.putText(source, ('PC FPS: %s' % fps), (40, 20), config.FONT, 0.5, (255, 255, 255), 1, cv2.LINE_AA)
-            cv2.putText(source, ('CPU Temperature: %s' % functions.cpu_temp), (370, 350), config.FONT, 0.5,
+            cv2.putText(source, ('PC FPS: %s' % fps), (40, 40), config.FONT, config.FONT_SIZE, (255, 255, 255), 1,
+                        cv2.LINE_AA)
+            if config.POWER_MODULE:
+                cv2.putText(source, ('Voltage: %s' % functions.voltage),
+                            (int(config.VIDEO_WIDTH) - 160, int(config.VIDEO_HEIGHT) - 150), config.FONT,
+                            config.FONT_SIZE,
+                            (128, 255, 128), 1,
+                            cv2.LINE_AA)
+                cv2.putText(source, ('Current: %s' % functions.current),
+                            (int(config.VIDEO_WIDTH) - 160, int(config.VIDEO_HEIGHT) - 120), config.FONT,
+                            config.FONT_SIZE,
+                            (128, 255, 128), 1,
+                            cv2.LINE_AA)
+            cv2.putText(source, ('CPU Temp: %s' % functions.cpu_temp),
+                        (int(config.VIDEO_WIDTH) - 160, int(config.VIDEO_HEIGHT) - 90), config.FONT, config.FONT_SIZE,
                         (128, 255, 128), 1,
                         cv2.LINE_AA)
-            cv2.putText(source, ('CPU Usage: %s' % functions.cpu_use), (370, 380), config.FONT, 0.5, (128, 255, 128), 1,
+            cv2.putText(source, ('CPU Usage: %s' % functions.cpu_use),
+                        (int(config.VIDEO_WIDTH) - 160, int(config.VIDEO_HEIGHT) - 60), config.FONT, config.FONT_SIZE,
+                        (128, 255, 128), 1,
                         cv2.LINE_AA)
-            cv2.putText(source, ('RAM Usage: %s' % functions.ram_use), (370, 410), config.FONT, 0.5, (128, 255, 128), 1,
+            cv2.putText(source, ('RAM Usage: %s' % functions.ram_use),
+                        (int(config.VIDEO_WIDTH) - 160, int(config.VIDEO_HEIGHT) - 30), config.FONT, config.FONT_SIZE,
+                        (128, 255, 128), 1,
                         cv2.LINE_AA)
 
             # Ultra thread with data is called from GUI

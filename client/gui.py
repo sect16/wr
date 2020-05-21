@@ -51,7 +51,7 @@ def loop():  # GUI
     global root, e1, e2, e3, label_ip_1, label_ip_2, COLOR_BTN, COLOR_TEXT, btn_connect, \
         label_cpu_temp, label_cpu_use, label_ram_use, COLOR_TEXT, var_R, var_B, var_G, btn_steady, btn_find_color, \
         btn_watchdog, btn_smooth, btn_audio, btn_quit, btn_Switch_1, btn_Switch_2, btn_Switch_3, btn_FPV, \
-        btn_ultra, btn_find_line, btn_sport, canvas_ultra, var_R, var_G, var_B
+        btn_ultra, btn_find_line, btn_sport, canvas_ultra, var_R, var_G, var_B, label_voltage, label_current
     root.geometry('565x510')  # Main window size
     root.config(bg=COLOR_BG)  # Set the background color of root window
     try:
@@ -69,6 +69,8 @@ def loop():  # GUI
     label_cpu_temp = tk.Label(root, width=18, text='CPU Temp:', fg=COLOR_TEXT, bg='#212121')
     label_cpu_use = tk.Label(root, width=18, text='CPU Usage:', fg=COLOR_TEXT, bg='#212121')
     label_ram_use = tk.Label(root, width=18, text='RAM Usage:', fg=COLOR_TEXT, bg='#212121')
+    label_voltage = tk.Label(root, width=18, text='Voltage:', fg=COLOR_TEXT, bg='#212121')
+    label_current = tk.Label(root, width=18, text='Current:', fg=COLOR_TEXT, bg='#212121')
     label_ip_0 = tk.Label(root, width=18, text='Status', fg=COLOR_TEXT, bg=COLOR_BTN)
     label_ip_1 = tk.Label(root, width=18, text='Disconnected', fg=COLOR_TEXT, bg='#F44336')
     label_ip_2 = tk.Label(root, width=18, text='Use default IP', fg=COLOR_TEXT, bg=COLOR_BTN)
@@ -77,17 +79,20 @@ def loop():  # GUI
     label_cpu_temp.place(x=400, y=15)  # Define a Label and put it in position
     label_cpu_use.place(x=400, y=45)  # Define a Label and put it in position
     label_ram_use.place(x=400, y=75)  # Define a Label and put it in position
+    if config.POWER_MODULE:
+        label_voltage.place(x=250, y=45)  # Define a Label and put it in position
+        label_current.place(x=250, y=75)  # Define a Label and put it in position
     label_ip_0.place(x=30, y=110)  # Define a Label and put it in position
     label_ip_1.place(x=400, y=110)  # Define a Label and put it in position
     label_ip_2.place(x=400, y=145)  # Define a Label and put it in position
     label_ip_3.place(x=175, y=15)  # Define a Label and put it in position
     label_open_cv.place(x=180, y=110)  # Define a Label and put it in position
 
-    e1 = tk.Entry(root, show=None, width=16, bg='#FFFFFF', fg='#000000', disabledbackground=config.COLOR_GREY,
+    e1 = tk.Entry(root, show=None, width=12, bg='#FFFFFF', fg='#000000', disabledbackground=config.COLOR_GREY,
                   state='normal')
     e2 = tk.Entry(root, show=None, width=71, bg='#FFFFFF', fg='#000000', disabledbackground=config.COLOR_GREY,
                   state='disabled')
-    e1.place(x=180, y=40)  # Define a Entry and put it in position
+    e1.place(x=300, y=15)  # Define a Entry and put it in position
     e2.place(x=30, y=305)  # Define a Entry and put it in position
 
     btn_connect = tk.Button(root, width=8, height=2, text='Connect', fg=COLOR_TEXT, bg=COLOR_BTN, command=connect,
@@ -107,7 +112,8 @@ def loop():  # GUI
     btn1.place(x=100, y=230)
     btn2.place(x=30, y=230)
     btn3.place(x=170, y=230)
-    btn_FPV.place(x=315, y=60)  # Define a Button and put it in position
+    if config.CAMERA_MODULE:
+        btn_FPV.place(x=150, y=60)  # Define a Button and put it in position
     btn_e2.place(x=470, y=300)  # Define a Button and put it in position
     btn_up.place(x=400, y=195)
     btn_down.place(x=400, y=265)
@@ -143,13 +149,15 @@ def loop():  # GUI
     # canvas_rec = canvas_ultra.create_rectangle(0, 0, (352 - int(float(0.75) * 352 / 3)), 30, fill='#448AFF', width=0)
     # canvas_text = canvas_ultra.create_text((90, 11), text='Ultrasonic Output: %sm' % 0.75, fill=COLOR_TEXT)
 
-    btn_find_color = tk.Button(root, width=10, text='FindColor', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
-    btn_find_color.place(x=115, y=465)
-    btn_find_color.bind('<ButtonPress-1>', call_find_color)
+    if config.CAMERA_MODULE:
+        btn_find_color = tk.Button(root, width=10, text='FindColor', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
+        btn_find_color.place(x=115, y=465)
+        btn_find_color.bind('<ButtonPress-1>', call_find_color)
 
-    btn_watchdog = tk.Button(root, width=10, text='WatchDog', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
-    btn_watchdog.place(x=200, y=465)
-    btn_watchdog.bind('<ButtonPress-1>', call_watchdog)
+    if config.CAMERA_MODULE:
+        btn_watchdog = tk.Button(root, width=10, text='WatchDog', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
+        btn_watchdog.place(x=200, y=465)
+        btn_watchdog.bind('<ButtonPress-1>', call_watchdog)
 
     btn_audio = tk.Button(root, width=10, text='Audio On', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_audio.place(x=370, y=465)
