@@ -14,6 +14,7 @@ import threading
 import time
 import traceback
 
+import power_meter
 import psutil
 
 import config
@@ -54,6 +55,7 @@ stream_audio_started = 0
 
 led = led.Led()
 fpv = fpv.Fpv()
+power_meter = power_meter.PowerMeter()
 
 
 def findline_thread():  # Line tracking mode
@@ -63,7 +65,7 @@ def findline_thread():  # Line tracking mode
         time.sleep(0.2)
 
 
-def get_cpu_tempfunc():
+def get_cpu_temp():
     """ Return CPU temperature """
     result = 0
     mypath = "/sys/class/thermal/thermal_zone0/temp"
@@ -103,25 +105,33 @@ def get_swap_info():
 def info_get():
     global cpu_t, cpu_u, gpu_t, ram_info
     while 1:
-        cpu_t = get_cpu_tempfunc()
+        cpu_t = get_cpu_temp()
         cpu_u = get_cpu_use()
         ram_info = get_ram_info()
         time.sleep(3)
 
 
-def info_send_client():
-    logger.info('Starting info thread.')
+def info_send_client_thread(event):
+    logger.debug('Thread started')
     SERVER_IP = addr[0]
     SERVER_ADDR = (SERVER_IP, config.INFO_PORT)
     Info_Socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  # Set connection value for socket
     Info_Socket.connect(SERVER_ADDR)
-    logger.debug(SERVER_ADDR)
-    while 1:
+    logger.info('Server address %s', SERVER_ADDR)
+    while not event.is_set():
         try:
-            Info_Socket.send((get_cpu_tempfunc() + ' ' + get_cpu_use() + ' ' + get_ram_info()).encode())
+            if config.POWER_MODULE:
+                power = power_meter.read_ina219()
+                Info_Socket.send((get_cpu_temp() + ' ' + get_cpu_use() + ' ' + get_ram_info() + ' {0:0.2f}V'.format(
+                    power[0]) + ' {0:0.2f}mA'.format(power[1])).encode())
+            else:
+                Info_Socket.send((get_cpu_temp() + ' ' + get_cpu_use() + ' ' + get_ram_info() + ' - -').encode())
+            pass
             time.sleep(1)
         except:
+            logger.error('Exception: %s', traceback.format_exc())
             pass
+    logger.debug('Thread stopped')
 
 
 def ultra_send_client(event):
@@ -157,7 +167,7 @@ def run():
     move.setup()
     findline.setup()
 
-    info_threading = threading.Thread(target=info_send_client)  # Define a thread for FPV and OpenCV
+    info_threading = threading.Thread(target=info_send_client_thread, args=[kill_event], daemon=True)
     info_threading.setDaemon(True)  # 'True' means it is a front thread,it would close when the mainloop() closes
     info_threading.start()  # Thread starts
 
@@ -360,10 +370,11 @@ def main():
             tcp_server_socket, addr = tcp_server.accept()
             logger.info('Connected from %s', addr)
             speak(speak_dict.connect)
-            global fpv
-            fps_threading = threading.Thread(target=fpv.fpv_capture_thread, args=(addr[0], kill_event),
-                                             daemon=True)  # Define a thread for FPV and OpenCV
-            fps_threading.start()  # Thread starts
+            if config.CAMERA_MODULE:
+                global fpv
+                fps_threading = threading.Thread(target=fpv.fpv_capture_thread, args=(addr[0], kill_event),
+                                                 daemon=True)  # Define a thread for FPV and OpenCV
+                fps_threading.start()  # Thread starts
             break
         except:
             led.colorWipe([0, 0, 0])

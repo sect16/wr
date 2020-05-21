@@ -33,3 +33,8 @@ MIN_TRACK_DISTANCE = 0.4
 MAX_TRACK_DISTANCE = 0.5
 servo = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 servo_init = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+
+# Hardware configuration
+POWER_MODULE = False
+SERVO_ENABLE = True
+CAMERA_MODULE = True
