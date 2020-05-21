@@ -236,7 +236,7 @@ def run():
             servo.clean_all()
         elif 'headAngle' == data:
             angle = data.split()
-            servo.camera_ang('home', int(angle[1]))
+            servo.camera_ang('abs', 300 - int(angle[1]))
         elif 'wsR' in data:
             try:
                 set_R = data.split()
