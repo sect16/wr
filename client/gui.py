@@ -39,6 +39,7 @@ COLOR_SWT_ACT = config.COLOR_SWT_ACT
 COLOR_BTN_ACT = config.COLOR_BTN_ACT
 COLOR_BG = config.COLOR_BG  # Set background color
 COLOR_TEXT = config.COLOR_TEXT
+COLOR_TEXT_LABEL = config.COLOR_TEXT_LABEL
 COLOR_BTN = config.COLOR_BTN
 label_bg = config.COLOR_BTN
 COLOR_BTN_RED = config.COLOR_BTN_RED
@@ -74,7 +75,7 @@ def loop():  # GUI
     label_ip_0 = tk.Label(root, width=18, text='Status', fg=COLOR_TEXT, bg=COLOR_BTN)
     label_ip_1 = tk.Label(root, width=18, text='Disconnected', fg=COLOR_TEXT, bg='#F44336')
     label_ip_2 = tk.Label(root, width=18, text='Use default IP', fg=COLOR_TEXT, bg=COLOR_BTN)
-    label_ip_3 = tk.Label(root, width=10, text='IP Address:', fg=COLOR_TEXT, bg='#000000')
+    label_ip_3 = tk.Label(root, width=10, text='IP Address:', fg=COLOR_TEXT_LABEL, bg=COLOR_BG)
     label_open_cv = tk.Label(root, width=28, text='OpenCV Status', fg=COLOR_TEXT, bg=COLOR_BTN)
     label_cpu_temp.place(x=400, y=15)  # Define a Label and put it in position
     label_cpu_use.place(x=400, y=45)  # Define a Label and put it in position
@@ -85,7 +86,7 @@ def loop():  # GUI
     label_ip_0.place(x=30, y=110)  # Define a Label and put it in position
     label_ip_1.place(x=400, y=110)  # Define a Label and put it in position
     label_ip_2.place(x=400, y=145)  # Define a Label and put it in position
-    label_ip_3.place(x=175, y=15)  # Define a Label and put it in position
+    label_ip_3.place(x=220, y=15)  # Define a Label and put it in position
     label_open_cv.place(x=180, y=110)  # Define a Label and put it in position
 
     e1 = tk.Entry(root, show=None, width=12, bg='#FFFFFF', fg='#000000', disabledbackground=config.COLOR_GREY,
@@ -107,7 +108,7 @@ def loop():  # GUI
     btn_FPV = tk.Button(root, width=8, text='Video', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_e2 = tk.Button(root, width=10, text='Send', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
 
-    btn_connect.place(x=315, y=15)  # Define a Button and put it in position
+    btn_connect.place(x=150, y=15)  # Define a Button and put it in position
     btn0.place(x=100, y=195)
     btn1.place(x=100, y=230)
     btn2.place(x=30, y=230)
