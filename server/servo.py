@@ -20,14 +20,13 @@ pca = Adafruit_PCA9685.PCA9685()
 pca.set_pwm_freq(50)
 
 '''
-change this form 1 to 0 to reverse servos
+Change to reverse servo
 '''
-look_direction = 1
+SERVO_INVERT = True
+LOOK_MAX = 500
+LOOK_MIN = 100
 
-look_max = 500
-look_min = 100
-
-org_pos = 300
+position = 300
 
 
 def ctrl_range(raw, max_genout, min_genout):
@@ -41,29 +40,44 @@ def ctrl_range(raw, max_genout, min_genout):
 
 
 def camera_ang(direction, ang):
-    global org_pos
+    """
+    This function set the camera vertical angle servo. If 'no' is passed as angle it will use an increment
+    constant value CAM_ANGLE defined in the config.
+    Setting direction abs will set servo position to the ang param.
+    :param direction: Camera movement direction. Possible values: lookup, lookdown, home, abs
+    :param ang: Number of steps to move servo.
+    """
+    global position
     if ang == 'no':
         ang = config.CAM_ANGLE
-    if look_direction:
-        if direction == 'lookdown':
-            org_pos += ang
-            org_pos = ctrl_range(org_pos, look_max, look_min)
-        elif direction == 'lookup':
-            org_pos -= ang
-            org_pos = ctrl_range(org_pos, look_max, look_min)
-        elif direction == 'home':
-            org_pos = 300
     else:
-        if direction == 'lookdown':
-            org_pos -= ang
-            org_pos = ctrl_range(org_pos, look_max, look_min)
-        elif direction == 'lookup':
-            org_pos += ang
-            org_pos = ctrl_range(org_pos, look_max, look_min)
-        elif direction == 'home':
-            org_pos = 300
-
-    set_pwm(0, org_pos)
+        if SERVO_INVERT:
+            if direction == 'lookdown':
+                position += ang
+                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
+            elif direction == 'lookup':
+                position -= ang
+                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
+            elif direction == 'home':
+                position = 300
+            elif direction == 'abs':
+                position = ang
+            else:
+                logger.error('Invalid direction. Valid options (lookup, lookdown, home, abs).')
+        else:
+            if direction == 'lookdown':
+                position -= ang
+                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
+            elif direction == 'lookup':
+                position += ang
+                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
+            elif direction == 'home':
+                position = 300
+            elif direction == 'abs':
+                position = ang
+            else:
+                logger.error('Invalid direction. Valid options (lookup, lookdown, home, abs).')
+    set_pwm(0, position)
 
 
 def clean_all():
