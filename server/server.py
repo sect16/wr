@@ -56,7 +56,7 @@ stream_audio_started = 0
 led = led.Led()
 fpv = fpv.Fpv()
 if config.POWER_MODULE:
-    power_meter = power_module.PowerMeter()
+    power_module = power_module.PowerMeter()
 
 
 def findline_thread():  # Line tracking mode
@@ -122,7 +122,7 @@ def info_send_client_thread(event):
     while not event.is_set():
         try:
             if config.POWER_MODULE:
-                power = power_meter.read_ina219()
+                power = power_module.read_ina219()
                 Info_Socket.send((get_cpu_temp() + ' ' + get_cpu_use() + ' ' + get_ram_info() + ' {0:0.2f}V'.format(
                     power[0]) + ' {0:0.2f}mA'.format(power[1])).encode())
             else:
