@@ -14,7 +14,6 @@ import threading
 import time
 import traceback
 
-import power_meter
 import psutil
 
 import config
@@ -22,6 +21,7 @@ import findline
 import fpv
 import led
 import move
+import power_module
 import servo
 import speak_dict
 import ultra
@@ -56,7 +56,7 @@ stream_audio_started = 0
 led = led.Led()
 fpv = fpv.Fpv()
 if config.POWER_MODULE:
-    power_meter = power_meter.PowerMeter()
+    power_meter = power_module.PowerMeter()
 
 
 def findline_thread():  # Line tracking mode
