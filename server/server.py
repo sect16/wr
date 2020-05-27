@@ -55,7 +55,8 @@ stream_audio_started = 0
 
 led = led.Led()
 fpv = fpv.Fpv()
-power_meter = power_meter.PowerMeter()
+if config.POWER_MODULE:
+    power_meter = power_meter.PowerMeter()
 
 
 def findline_thread():  # Line tracking mode
