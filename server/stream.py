@@ -1,4 +1,5 @@
 # import the necessary packages
+import logging
 import time
 from threading import Thread
 
@@ -7,8 +8,10 @@ from picamera.array import PiRGBArray
 
 import config
 
+logger = logging.getLogger(__name__)
 
-class PiVideoStream:
+
+class Stream:
     def __init__(self, **kwargs):
         # initialize the camera
         self.camera = PiCamera()
@@ -36,13 +39,13 @@ class PiVideoStream:
 
     def start(self):
         # start the thread to read frames from the video stream
-        t = Thread(target=self.update, args=())
-        t.daemon = True
+        t = Thread(target=self.update, args=(), daemon=True)
+        t.setName('stream_thread')
         t.start()
         return self
 
     def update(self):
-        global read
+        logger.info('Thread started')
         # keep looping infinitely until the thread is stopped
         for f in self.stream:
             # grab the frame from the stream and clear the stream in
@@ -52,9 +55,11 @@ class PiVideoStream:
             # if the thread indicator variable is set, stop the thread
             # and resource camera resources
             if self.stopped:
+                logger.info('Stopping stream and closing camera.')
                 self.stream.close()
                 self.rawCapture.close()
                 self.camera.close()
+                logger.info('Thread stopped')
                 return
 
     def read(self):

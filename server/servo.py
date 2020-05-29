@@ -86,7 +86,7 @@ def clean_all():
 
 def set_pwm(servo, pos):
     logger.debug("Set PWM on servo [%s], position [%s])", servo, pos)
-    if config.SERVO_ENABLE:
+    if config.SERVO_MODULE:
         pca.set_pwm(servo, 0, pos)
 
 

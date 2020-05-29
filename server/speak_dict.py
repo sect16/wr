@@ -10,4 +10,3 @@ name = 'Robot'
 connect = str(name + ' connected')
 disconnect = str(name + ' disconnected')
 bark = 'I see big boss bone, yummy yummy'
-hello = 'yellow'
