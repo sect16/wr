@@ -23,14 +23,16 @@ LABEL_BG = '#F44336'
 COLOR_BTN_RED = '#FF6D00'
 FONT = cv2.FONT_HERSHEY_SIMPLEX
 MAX_CONTOUR_AREA = 5000
+FONT_SIZE = 0.5
 
 # Configuration
+KEEPALIVE_INTERVAL = 20
 INFO_PORT = 2256  # Define port serial
 MAX_INFO_RETRY = 10
 SERVER_PORT = 10223  # Define port serial
 BUFFER_SIZE = 1024
 ULTRA_PORT = 2257  # Define port serial
-ULTRA_SENSOR = 1
+ULTRA_SENSOR = True
 VIDEO_PORT = 5555
 VIDEO_TIMEOUT = 10000
 VIDEO_WIDTH = 640
@@ -51,4 +53,6 @@ guiTuple = (
     "canvas_ultra.place(x=30, y=145)",
     "btn_find_line.place(x=285, y=465)",
     "btn_ultra.place(x=30, y=465)",
-    "canvas_ultra.place(x=30, y=145)")
+    "canvas_ultra.place(x=30, y=145)",
+    "scale_cam.place(x=480, y=190)"
+)

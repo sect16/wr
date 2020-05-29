@@ -14,7 +14,7 @@ import traceback
 
 import config
 import video
-from functions import send, connect, terminate, ultra_event, start_ultra, connect_event, config_import
+from common import send, connect, terminate, ultra_event, start_ultra, connect_event, config_import
 
 logger = logging.getLogger(__name__)
 root = tk.Tk()  # Define a window named root
@@ -41,7 +41,6 @@ COLOR_BG = config.COLOR_BG  # Set background color
 COLOR_TEXT = config.COLOR_TEXT
 COLOR_TEXT_LABEL = config.COLOR_TEXT_LABEL
 COLOR_BTN = config.COLOR_BTN
-label_bg = config.COLOR_BTN
 COLOR_BTN_RED = config.COLOR_BTN_RED
 
 
@@ -150,8 +149,6 @@ def loop():  # GUI
                          tickinterval=None, resolution=1, variable=var_camera, troughcolor='#FFFFFF',
                          command=set_camera,
                          fg=COLOR_TEXT, bg=COLOR_BG, highlightthickness=0, width=15)
-    scale_cam.place(x=480, y=190)
-
     canvas_ultra = tk.Canvas(root, bg='#FFFFFF', height=23, width=352, highlightthickness=0)
     canvas_ultra.create_text((90, 11), text='Ultrasonic OFF', fill='#000000')
     # Canvas testing
@@ -184,7 +181,7 @@ def loop():  # GUI
     btn_up.bind('<ButtonPress-1>', lambda _: send('headup'))
     btn_down.bind('<ButtonPress-1>', lambda _: send('headdown'))
     btn_home.bind('<ButtonPress-1>', lambda _: send('headhome'))
-    btn_FPV.bind('<ButtonRelease-1>', video.call_fpv)
+    btn_FPV.bind('<ButtonRelease-1>', lambda _: video.call_fpv(e1.get()))
     btn_e2.bind('<ButtonRelease-1>', send_command)
     btn0.bind('<ButtonRelease-1>', call_stop)
     btn1.bind('<ButtonRelease-1>', call_stop)
@@ -240,16 +237,17 @@ def loop():  # GUI
         logger.warning('Exception reading LED values from file: %s', traceback.format_exc())
         pass
 
-    # Darkpaw speed_set
-    e3 = tk.Entry(root, show=None, width=8, bg='#FFFFFF', fg='#000000', disabledbackground=config.COLOR_GREY,
+    # Darkpaw speed_set entry
+    e3 = tk.Entry(root, show=None, width=3, bg='#FFFFFF', fg='#000000', disabledbackground=config.COLOR_GREY,
                   state='normal')
     try:
         e3.insert(0, int(config_import('SPEED:')))
     except:
         pass
-    label_e3 = tk.Label(root, width=5, text='Speed:', fg=COLOR_TEXT, bg='#000000')
-    btn_e3 = tk.Button(root, width=5, text='SET', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
-    btn_e3.bind('<ButtonPress-1>', lambda _: send('speed:' + e3.get()))
+    label_e3 = tk.Label(root, width=5, text='Speed:', fg=COLOR_TEXT_LABEL, bg=COLOR_BG)
+    btn_e3 = tk.Button(root, width=3, text='SET', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
+    btn_e3.bind('<ButtonPress-1>', set_speed)
+
     # Darkpaw balance controls
     btn_balance_left = tk.Button(root, width=3, text='', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
     btn_balance_right = tk.Button(root, width=3, text='', fg=COLOR_TEXT, bg=COLOR_BTN, relief='ridge')
@@ -270,8 +268,6 @@ def loop():  # GUI
     btn_balance_front_right.bind('<ButtonPress-1>', lambda _: send('btn_balance_front_right'))
     btn_balance_back_left.bind('<ButtonPress-1>', lambda _: send('btn_balance_back_left'))
     btn_balance_back_right.bind('<ButtonPress-1>', lambda _: send('btn_balance_back_right'))
-
-    # TO-DO add camera head angle slider bar
 
     # Read custom gui from config
     for x in config.guiTuple:
@@ -565,7 +561,7 @@ def button_update(status_data):
                 btn_ultra.config(bg=COLOR_BTN_RED)
             except NameError:
                 pass
-        elif 'Ultrasonic_end' == status_data and config.ULTRA_SENSOR is not None:
+        elif 'Ultrasonic_end' == status_data and config.ULTRA_SENSOR:
             ultra_event.clear()
             ultrasonic_mode = 0
             try:
@@ -614,6 +610,8 @@ def button_update(status_data):
             btn_audio.config(bg=COLOR_SWT_ACT)
         elif 'stream_audio_end' == status_data:
             btn_audio.config(bg=COLOR_BTN)
+        elif 'stop_video' == status_data:
+            pass
     except:
         logger.error('Button status update exception: %s', traceback.format_exc())
 
@@ -630,17 +628,20 @@ def focus(event):
         unbind_keys()
 
 
-def stat_update(cpu_temp, cpu_use, ram_use):
+def stat_update(cpu_temp, cpu_use, ram_use, voltage, current):
     """
     This function updates the GUI label from statistical data received from robot.
     :param cpu_temp: CPU Temperature value
     :param cpu_use: CPU usage value
     :param ram_use: RAM usage value
+    :param voltage: Bus voltage value (V)
+    :param current: Bus current value (mA)
     """
     label_cpu_temp.config(text='CPU Temp: %s℃' % cpu_temp)
     label_cpu_use.config(text='CPU Usage: %s' % cpu_use)
     label_ram_use.config(text='RAM Usage: %s' % ram_use)
-
+    label_voltage.config(text='Voltage: %s' % voltage)
+    label_current.config(text='Current: %s' % current)
 
 def set_R(event):
     send_led('wsR', var_R.get())
@@ -671,8 +672,8 @@ def set_camera(event):
 
 def send_command(event):
     """
-    This function sends TTS string to robot when connection is established. Nothing is sent is connection off.
-    :param event:
+    This function sends TTS string to robot when connection is established.
+    :param event: Not used
     """
     if e2.get() != '' and connect_event.is_set():
         send(e2.get())
@@ -690,14 +691,19 @@ def connect_init(ip_address):
     e2.config(state='normal')
     btn_connect.config(state='normal')
     btn_connect.config(text='Disconnect')
+    time.sleep(0.2)
     # Send initial values
-    '''
-    send('wsR %s' + str(var_R.get()))
-    time.sleep(1)
-    send('wsG %s' + str(var_G.get()))
-    time.sleep(1)
-    send('wsB %s' + str(var_B.get()))
-    time.sleep(1)
-    '''
+    send(' wsR ' + var_R.get())
+    time.sleep(0.2)
+    send(' wsG ' + var_G.get())
+    time.sleep(0.2)
+    send(' wsB ' + var_B.get())
+    time.sleep(0.2)
+    if not e3.get() == '':
+        send(' speed:' + e3.get())
+
+
+def set_speed(event):
+    global e3
     send('speed:' + e3.get())
-    return None
+    e1.focus_set()

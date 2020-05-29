@@ -3,10 +3,6 @@
 # Author      : Chin Pin Hon
 # Date        : 14.01.2020
 
-"""
-Functions for starting threads
-"""
-
 import logging
 import threading
 import time
@@ -38,13 +34,17 @@ def config_export(label, new_num):
     str_num = str(new_num)
     contents = []
     exist = 0
-    with open("config.txt", "r") as f:
-        for line in f.readlines():
-            if line.find(label) >= 0:
-                exist = 1
-                contents.append(label + str_num)
-            elif line != '\n':
-                contents.append(line.strip('\n'))
+    try:
+        with open("config.txt", "r") as f:
+            for line in f.readlines():
+                if line.find(label) >= 0:
+                    exist = 1
+                    contents.append(label + str_num)
+                elif line != '\n':
+                    contents.append(line.strip('\n'))
+    except:
+        logger.warning('Unable to read config.txt file.')
+        pass
     with open("config.txt", "w") as f:
         if exist == 0:
             contents.append(label + str_num)
@@ -62,7 +62,7 @@ def config_import(label):
         for line in f:
             if line.find(label) == 0:
                 return line.replace(" ", "").replace("\n", "").split(':', 2)[1]
-    logger.error('Unable read value label \"%s\" from configuration file.', label)
+    logger.warning('Unable to read value label \"%s\" from configuration file.', label)
 
 
 def status_client_thread(event):
@@ -70,7 +70,7 @@ def status_client_thread(event):
     TCP client thread
     :param event: Clear event flag to terminate thread
     """
-    logger.debug('Thread started')
+    logger.info('Thread started')
     global tcp_client_socket
     while event.is_set():
         try:
@@ -81,15 +81,15 @@ def status_client_thread(event):
         except:
             logger.error('Thread exception: %s', traceback.format_exc())
             disconnect()
-    logger.debug('Thread stopped')
+    logger.info('Thread stopped')
 
 
-def stat_server_thread(event):
+def stat_thread(event):
     """
     Statistics server thread
     :param event: Clear event flag to terminate thread
     """
-    logger.debug('Thread started')
+    logger.info('Thread started')
     global cpu_temp, cpu_use, ram_use, voltage, current, connect_event
     addr = ('', config.INFO_PORT)
     stat_sock = socket(AF_INET, SOCK_STREAM)
@@ -120,7 +120,7 @@ def stat_server_thread(event):
             logger.error('Connection error, disconnecting')
             disconnect()
             logger.error('Thread exception: %s', traceback.format_exc())
-    logger.debug('Thread stopped')
+    logger.info('Thread stopped')
 
 
 def ip_check(ip_address):
@@ -162,8 +162,13 @@ def connect():  # Call this function to connect with the server
             connect_event.set()  # Set to start threads
             status_threading = threading.Thread(target=status_client_thread, args=([connect_event]),
                                                 daemon=True)
+            status_threading.setName('status_thread')
             status_threading.start()
-            info_threading = threading.Thread(target=stat_server_thread, args=([connect_event]), daemon=True)
+            info_threading = threading.Thread(target=stat_thread, args=([connect_event]), daemon=True)
+            info_threading.setName('stat_thread')
+            info_threading.start()
+            info_threading = threading.Thread(target=keepalive_thread, args=([connect_event]), daemon=True)
+            info_threading.setName('keepalive_thread')
             info_threading.start()
             gui.connect_init(ip_address)
         except:
@@ -202,6 +207,8 @@ def disconnect():
     gui.unbind_keys()
     gui.e1.config(state='normal')
     gui.e2.config(state='disabled')
+    gui.btn_FPV.config(bg=config.COLOR_BTN)
+    gui.btn_FPV['state'] = 'normal'
     gui.btn_audio.config(bg=config.COLOR_BTN)
 
 
@@ -241,8 +248,36 @@ def start_ultra():
     Does not start if thread is existing not yet stopped.
     """
     global ultra_event
-    if gui.ultrasonic_mode == 0 and not ultra_event.is_set() and config.ULTRA_SENSOR is not None:
+    if gui.ultrasonic_mode == 0 and not ultra_event.is_set() and config.ULTRA_SENSOR:
         import ultra
         ultra_event.set()
         ultra_threading = threading.Thread(target=ultra.ultra_server_thread, args=([ultra_event]), daemon=True)
+        ultra_threading.setName('ultra_thread')
         ultra_threading.start()
+
+
+def thread_isAlive(*args):
+    """
+    This function searches for the thread name defined using threading.Thread.setName() function.
+    :param args: Name of the thread. Can be multiple.
+    :return: Returns a boolean indicating if any of the threads was found.
+    """
+    logger.debug('Checking for existence of threads: %s', args)
+    for thread_name in args:
+        logger.debug('Looking for thread: ' + thread_name)
+        lst = threading.enumerate()
+        for x in lst:
+            if x.name == thread_name:
+                logger.debug('Found %s is active.', x)
+                return True
+    logger.debug('No threads found.')
+    return False
+
+
+def keepalive_thread(event):
+    logger.info('Thread started')
+    while event.is_set():
+        time.sleep(config.KEEPALIVE_INTERVAL)
+        logger.debug('Sending keepalive message')
+        send('|ACK|')
+    logger.info('Thread stopped')

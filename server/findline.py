@@ -5,12 +5,15 @@
 # E-mail      : support@adeept.com
 # Author      : William
 # Date        : 2019/02/23
+import logging
 import time
 
 import RPi.GPIO as GPIO
-import move
-import config
 
+import config
+import move
+
+logger = logging.getLogger(__name__)
 '''
 status     = 1          #Motor rotation
 forward    = 1          #Motor forward
@@ -54,7 +57,7 @@ def run():
     status_right = GPIO.input(line_pin_right)
     status_middle = GPIO.input(line_pin_middle)
     status_left = GPIO.input(line_pin_left)
-    # print('R%d   M%d   L%d'%(status_right,status_middle,status_left))
+    logger.debug('R%d   M%d   L%d' % (status_right, status_middle, status_left))
     if status_middle == 1:
         move.move(config.SPEED_BASE, 'forward', 'no', 1)
     elif status_left == 1:
@@ -63,7 +66,6 @@ def run():
         move.move(config.SPEED_BASE, 'no', 'left', 1)
     else:
         move.move(config.SPEED_BASE, 'backward', 'no', 1)
-
     time.sleep(0.2)
 
 

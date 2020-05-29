@@ -21,9 +21,10 @@ import config
 import led
 import move
 import pid
+import servo
 
 if config.CAMERA_MODULE:
-    import pivideostream
+    import stream
 import speak_dict
 from speak import speak
 
@@ -32,7 +33,7 @@ logger = logging.getLogger(__name__)
 led = led.Led()
 pid = pid.Pid()
 if config.CAMERA_MODULE:
-    pvs = pivideostream.PiVideoStream()
+    pvs = stream.PiVideoStream()
 pid.SetKp(0.5)
 pid.SetKd(0)
 pid.SetKi(0)
