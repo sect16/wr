@@ -167,9 +167,9 @@ def connect():  # Call this function to connect with the server
             info_threading = threading.Thread(target=stat_thread, args=([connect_event]), daemon=True)
             info_threading.setName('stat_thread')
             info_threading.start()
-            info_threading = threading.Thread(target=keepalive_thread, args=([connect_event]), daemon=True)
-            info_threading.setName('keepalive_thread')
-            info_threading.start()
+            keepalive_threading = threading.Thread(target=keepalive_thread, args=([connect_event]), daemon=True)
+            keepalive_threading.setName('keepalive_thread')
+            keepalive_threading.start()
             gui.connect_init(ip_address)
         except:
             logger.error('Unable to connect: %s', traceback.format_exc())
