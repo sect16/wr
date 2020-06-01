@@ -221,7 +221,7 @@ def listener_thread(event):
     error_count = 0
     direction_command = 'no'
     turn_command = 'no'
-
+    sport_mode = False
     while not event.is_set():
         try:
             data = str(tcp_server_socket.recv(config.BUFFER_SIZE).decode())
@@ -344,7 +344,7 @@ def listener_thread(event):
             move.motorStop()
         elif 'sport_mode_on' == data:
             sport_mode = True
-            tcp_server_socket.send(('sport_mode').encode())
+            tcp_server_socket.send(('sport_mode_on').encode())
         elif 'sport_mode_off' == data:
             sport_mode = False
             tcp_server_socket.send(('sport_mode_off').encode())
@@ -389,7 +389,7 @@ def listener_thread(event):
             servo.camera_ang('home', 'no')
             time.sleep(0.2)
             servo.clean_all()
-        elif 'headAngle' == data:
+        elif 'headAngle' in data:
             angle = data.split()
             servo.camera_ang('abs', 300 - int(angle[1]))
         else:

@@ -39,7 +39,7 @@ def ctrl_range(raw, max_genout, min_genout):
     return int(raw_output)
 
 
-def camera_ang(direction, ang):
+def camera_ang(direction, ang='no'):
     """
     This function set the camera vertical angle servo. If 'no' is passed as angle it will use an increment
     constant value CAM_ANGLE defined in the config.
@@ -48,39 +48,31 @@ def camera_ang(direction, ang):
     :param ang: Number of steps to move servo.
     """
     global position
-    if ang == 'no':
+    logger.debug('Servo received: %s %s', direction, ang)
+    if not isinstance(ang, int):
         ang = config.CAM_ANGLE
-    else:
+    if direction == 'lookdown':
         if SERVO_INVERT:
-            if direction == 'lookdown':
-                position += ang
-                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
-            elif direction == 'lookup':
-                position -= ang
-                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
-            elif direction == 'home':
-                position = 300
-            elif direction == 'abs':
-                position = ang
-            else:
-                logger.error('Invalid direction. Valid options (lookup, lookdown, home, abs).')
+            position += ang
         else:
-            if direction == 'lookdown':
-                position -= ang
-                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
-            elif direction == 'lookup':
-                position += ang
-                position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
-            elif direction == 'home':
-                position = 300
-            elif direction == 'abs':
-                position = ang
-            else:
-                logger.error('Invalid direction. Valid options (lookup, lookdown, home, abs).')
+            position -= ang
+    elif direction == 'lookup':
+        if SERVO_INVERT:
+            position -= ang
+        else:
+            position += ang
+    elif direction == 'home':
+        position = 300
+    elif direction == 'abs':
+        position = ang
+    else:
+        logger.error('Invalid direction. Valid options (lookup, lookdown, home, abs).')
+    position = ctrl_range(position, LOOK_MAX, LOOK_MIN)
     set_pwm(0, position)
 
 
 def clean_all():
+    logger.info('Reset all servos')
     pca.set_all_pwm(0, 0)
 
 
