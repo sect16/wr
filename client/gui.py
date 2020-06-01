@@ -667,7 +667,8 @@ def send_led(index, value):
 
 
 def set_camera(event):
-    send_led('headAngle %s', var_camera.get())
+    send('headAngle ' + var_camera.get())
+    time.sleep(0.2)
 
 
 def send_command(event):
