@@ -59,3 +59,10 @@ loggers:
     level: INFO
     handlers: [console]
     propogate: no
+
+
+  servo:
+    level: DEBUG
+    handlers: [console]
+    propogate: no
+
